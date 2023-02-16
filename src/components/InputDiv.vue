@@ -62,7 +62,11 @@ export default {
 
             function generateFormula(level) {
                 if (level === 0) {
-                    return variables[Math.floor(Math.random() * variables.length)];
+                    let result = "";
+                    if (Math.random() < 0.5) {
+                        result = `¬${result}`;
+                    }
+                    return `${result}${variables[Math.floor(Math.random() * variables.length)]}`;
                 } else {
                     const randomOperator = operators[Math.floor(Math.random() * operators.length)];
                     let formula = `(${generateFormula(level - 1)} ${randomOperator} `;
@@ -89,8 +93,8 @@ export default {
         createVariables(variable, operands, isNeg) {
             let varLength = 0;
 
-            console.log(variable);
-            console.log(variable.length);
+            //console.log(variable);
+            //console.log(variable.length);
             if (variable.length == 0) return null;
 
             variable.forEach(element => {
@@ -122,13 +126,12 @@ export default {
             let correctOperands = ["∧", "∨", "⇒", "⇔"];
             let operands = []; let variables = [];
             let isNeg = input[this.index - 2] == "¬" ? true : false;
-            console.log("createFormula: " + input);
+            //console.log("createFormula: " + input);
             while (input[this.index] !== ")" && this.index < 100) {
-                console.log(input[this.index]);
+                //console.log(input[this.index]);
 
                 if (input[this.index].toUpperCase().match(/[a-z]/i)) {
                     let createdVar = this.createVariable(input[this.index], input[this.index - 1] == "¬" ? true : false);
-                    console.log("cr " + createdVar);
                     if (createdVar != null)
                         variables.push(createdVar);
                 }
@@ -143,19 +146,15 @@ export default {
                 }
                 this.index++;
             }
-            //console.log(input[this.index]);
-            //console.log(this.createVariables(variables, operands, isNeg));
 
-            console.log(variables);
             while (variables.length == 1 && variables[0].hasVariables == true) {
-                //console.log("bef" + isNeg + variables[0].isNeg);
                 isNeg = (isNeg !== variables[0].isNeg);
-                //console.log("aft" + isNeg + variables[0].isNeg);
+                operands = variables[0].operands;
                 variables = variables[0].variable;
             }
 
 
-            if (variables.length == 1) {
+            if (variables.length == 1 && variables[0].hasVariables == false) {
                 return this.createVariable(variables[0].variable, variables[0].isNeg !== isNeg);
             }
 
