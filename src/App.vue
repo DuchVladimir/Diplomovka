@@ -28,11 +28,10 @@ import HelloWorld from "./components/HelloWorld.vue";
 
 <script>
 export default {
-    data() {
-        return {
-        }
-    },
-}
+  data() {
+    return {};
+  },
+};
 </script>
 
 <style scoped>

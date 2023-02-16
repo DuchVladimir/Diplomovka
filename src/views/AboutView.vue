@@ -1,9 +1,8 @@
 <template>
   <div class="about">
-    <InputDiv/>
+    <InputDiv />
   </div>
 </template>
-
 
 <script>
 /*
@@ -30,15 +29,15 @@ import InputDiv from "../components/InputDiv.vue";
 
 export default {
   components: {
-    InputDiv
-},
-	data() {
-		return {
-			display: false,
-      message: ""
-		}
-	}
-}
+    InputDiv,
+  },
+  data() {
+    return {
+      display: false,
+      message: "",
+    };
+  },
+};
 </script>
 
 <style>
@@ -49,6 +48,4 @@ export default {
     align-items: center;
   }
 }
-
-
 </style>
