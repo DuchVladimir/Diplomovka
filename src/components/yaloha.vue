@@ -60,7 +60,11 @@ export default {
 
       function generateFormula(level) {
         if (level === 0) {
-          return variables[Math.floor(Math.random() * variables.length)];
+          let result = "";
+          if (Math.random() < 0.5) {
+            result = `¬${result}`;
+          }
+          return `${result}${variables[Math.floor(Math.random() * variables.length)]}`;
         } else {
           const randomOperator = operators[Math.floor(Math.random() * operators.length)];
           let formula = `(${generateFormula(level - 1)} ${randomOperator} `;
@@ -87,14 +91,20 @@ export default {
     createVariables(variable, operands, isNeg) {
       let varLength = 0;
 
-      console.log(variable);
-      console.log(variable.length);
+      //console.log(variable);
+      //console.log(variable.length);
       if (variable.length == 0) return null;
 
       variable.forEach(element => {
         varLength += element.variableLength
         //console.log(varLength);
       });
+
+      let result = this.getAndOrOperands(variable, operands);
+      if (result) {
+        result.isNeg = isNeg;
+        return result;
+      }
 
 
       return {
@@ -120,13 +130,12 @@ export default {
       let correctOperands = ["∧", "∨", "⇒", "⇔"];
       let operands = []; let variables = [];
       let isNeg = input[this.index - 2] == "¬" ? true : false;
-      console.log("createFormula: " + input);
+      //console.log("createFormula: " + input);
       while (input[this.index] !== ")" && this.index < 100) {
-        console.log(input[this.index]);
+        //console.log(input[this.index]);
 
         if (input[this.index].toUpperCase().match(/[a-z]/i)) {
           let createdVar = this.createVariable(input[this.index], input[this.index - 1] == "¬" ? true : false);
-          console.log("cr " + createdVar);
           if (createdVar != null)
             variables.push(createdVar);
         }
@@ -141,25 +150,25 @@ export default {
         }
         this.index++;
       }
-      //console.log(input[this.index]);
-      //console.log(this.createVariables(variables, operands, isNeg));
-
-      console.log(variables);
-      while (variables.length == 1 && variables[0].hasVariables == true) {
-        //console.log("bef" + isNeg + variables[0].isNeg);
-        isNeg = (isNeg !== variables[0].isNeg);
-        //console.log("aft" + isNeg + variables[0].isNeg);
-        variables = variables[0].variable;
-      }
 
 
-      if (variables.length == 1) {
+      if (variables.length == 1 && variables[0].hasVariables == false) {
         return this.createVariable(variables[0].variable, variables[0].isNeg !== isNeg);
       }
 
+      this.setClosuresByOperands(variables, operands);
 
+
+      while (variables.length == 1 && variables[0].hasVariables == true) {
+        isNeg = (isNeg !== variables[0].isNeg);
+        operands = variables[0].operands;
+        variables = variables[0].variable;
+      }
       return this.createVariables(variables, operands, isNeg);
+
     },
+
+
 
 
 
@@ -170,6 +179,107 @@ export default {
       console.log(this.createFormula("(" + expression + ")"));
 
 
+    },
+
+    getAndOrOperands(variables, operands) {
+      if (operands[0] == "⇔" && operands.length == 1) {
+        let var2 = [];
+        let vars = [];
+        if (variables[0].hasVariables)
+          vars.push(this.createVariables(variables[0].variable, variables[0].operands, variables[0].isNeg !== true));
+        else
+          vars.push(this.createVariable(variables[0].variable, variables[0].isNeg !== true));
+
+        //vars.push(this.createVariable(variables[1].variable, variables[1].isNeg));
+        if (variables[1].hasVariables)
+          vars.push(this.createVariables(variables[1].variable, variables[1].operands, variables[1].isNeg !== true));
+        else
+          vars.push(this.createVariable(variables[1].variable, variables[1].isNeg !== true));
+
+
+        var2.push(this.createVariables(vars, ["∨"], false));
+        vars = [];
+        //vars.push(this.createVariable(variables[1].variable, variables[1].isNeg !== true));
+
+        if (variables[1].hasVariables)
+          vars.push(this.createVariables(variables[1].variable, variables[1].operands, variables[1].isNeg !== true));
+        else
+          vars.push(this.createVariable(variables[1].variable, variables[1].isNeg !== true));
+
+        if (variables[0].hasVariables)
+          vars.push(this.createVariables(variables[0].variable, variables[0].operands, variables[0].isNeg !== true));
+        else
+          vars.push(this.createVariable(variables[0].variable, variables[0].isNeg !== true));
+        var2.push(this.createVariables(vars, ["∨"], false));
+
+        return this.createVariables(var2, ["∧"], false);
+      }
+
+      if (operands[0] == "⇒" && operands.length == 1) {
+        return this.createVariables([
+          (this.createVariable(variables[0].variable, variables[0].isNeg !== true)),
+          (this.createVariable(variables[1].variable, variables[1].isNeg))], ["∨"], false);
+      }
+
+
+
+      return false;
+    },
+
+    setClosuresByOperands(variables, operands) {
+      if (operands.length > 1) {
+        for (let index = 0; index < operands.length; index++) {
+          let result = getSpecificOperandsTogether(this, variables, operands, index, "∧", true);
+          if (result) {
+            operands.splice(index, result.operands.length);
+            variables.splice(index, result.operands.length + 1);
+            variables.splice(index, 0, result);
+          }
+        }
+        for (let index = 0; index < operands.length; index++) {
+          let result = getSpecificOperandsTogether(this, variables, operands, index, "∨", true);
+          if (result) {
+            operands.splice(index, result.operands.length);
+            variables.splice(index, result.operands.length + 1);
+            variables.splice(index, 0, result);
+          }
+        }
+        for (let index = 0; index < operands.length; index++) {
+          let result = getSpecificOperandsTogether(this, variables, operands, index, "⇒", false);
+          if (result) {
+            operands.splice(index, result.operands.length);
+            variables.splice(index, result.operands.length + 1);
+            variables.splice(index, 0, result);
+          }
+        }
+        for (let index = 0; index < operands.length; index++) {
+          let result = getSpecificOperandsTogether(this, variables, operands, index, "⇔", false);
+          if (result) {
+            operands.splice(index, result.operands.length);
+            variables.splice(index, result.operands.length + 1);
+            variables.splice(index, 0, result);
+          }
+        }
+      }
+
+      function getSpecificOperandsTogether(self, variables, operands, index, specidicOperand, repeat) {
+        // console.log(operands[index]);
+        if (operands[index] == specidicOperand) {
+          let newOperands = [specidicOperand]
+          let newVariables = [variables[index], variables[index + 1]]
+          let andCount = 0;
+          if (repeat) {
+            for (let i = index + 1; i < operands.length; i++) {
+              if (operands[i] == specidicOperand) {
+                newOperands.push(specidicOperand);
+                newVariables.push(variables[i + 1])
+              } else break;
+            }
+          }
+          return self.createVariables(newVariables, newOperands, false);
+        }
+        return false
+      }
     },
 
     addSymbol(letter) {
