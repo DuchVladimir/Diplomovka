@@ -1,6 +1,9 @@
 <template>
   <div class="about">
-    <InputDiv />
+    <div>
+      <InputDiv v-on:cnfFormula="showCnf" />
+      <h2>{{ cnf }}</h2>
+    </div>
   </div>
 </template>
 
@@ -14,15 +17,15 @@
 *******
         <Dialog v-model:visible="display">
     <template #header>
-		<h3>Header</h3>
-	</template>
+    <h3>Header</h3>
+  </template>
 
-	Content
+  Content
 
-	<template #footer>
-		<Button label="No" icon="pi pi-times" class="p-button-text"/>
+  <template #footer>
+    <Button label="No" icon="pi pi-times" class="p-button-text"/>
         <Button label="Yes" icon="pi pi-check " autofocus />
-	</template>
+  </template>
 </Dialog>
 */
 import InputDiv from "../components/InputDiv.vue";
@@ -34,9 +37,15 @@ export default {
   data() {
     return {
       display: false,
-      message: "",
+      cnf: "",
     };
   },
+  methods: {
+    showCnf(cnfFormula) {
+      //console.log(cnfFormula);
+      this.cnf = cnfFormula;
+    }
+  }
 };
 </script>
 

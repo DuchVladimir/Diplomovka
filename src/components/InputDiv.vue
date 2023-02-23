@@ -6,7 +6,7 @@
                 <PrimeButton icon="pi pi-check" class="p-button-info" @click="createRandomFormula"> <font-awesome-icon
                         icon="fa-solid fa-dice" /> </PrimeButton>
                 <input placeholder="Your formula" ref="input" id="inputbox"
-                    v-tooltip.top="`Supported characters are: 'a-Z' and '¬∧∨⇒()'`" v-model="msg" />
+                    v-tooltip.top="`Supported characters are: 'a-Z' and '¬∧∨⇒()'. 2 < Suported lenght <30`" v-model="msg" />
                 <PrimeButton icon="pi pi-check" class="p-button-success" @click="sendMsg" />
             </div>
         </div>
@@ -50,9 +50,11 @@ export default {
             cursorPos: 0,
             variables: [],
             operands: [],
-            index: 1
+            index: 1,
+            jasom: null
         };
     },
+    emits: ['cnfFormula'],
 
     methods: {
         createRandomFormula() {
@@ -104,6 +106,7 @@ export default {
             let result = this.getAndOrOperands(variable, operands);
             if (result) {
                 result.isNeg = isNeg;
+                console.log(result);
                 return result;
             }
 
@@ -172,54 +175,143 @@ export default {
 
 
 
+        // ¬(A) ⇔ (¬(B) ∧ ¬(D ⇔ C))
+        // (A∨(¬B∧¬((¬D∨C)∧(¬C∨D))))∧(¬(¬B∧¬((¬D∨C)∧(¬C∨D)))∨¬A)
 
-
+        //A⇔(B⇔C)
+        //(¬A∨((¬B∨C)∧(¬C∨B)))∧(¬((¬B∨C)∧(¬C∨B))∨A)
 
         convertToCNF(expression) {
             this.index = 1;
-            console.log(this.createFormula("(" + expression + ")"));
+            // console.log(this.createFormula("(" + expression + ")"));
+
+            let rootClause = this.createFormula("(" + expression + ")");
+
+            // console.log(rootClause);
+            // console.log(JSON.stringify(rootClause))
+            let objCopy = structuredClone(rootClause);
+
+            this.negateClosuresNegations(rootClause);
+            this.joinClauses(rootClause);
+
+            console.log(rootClause);
+
+            return rootClause;
+        },
+
+        // ⊤ a ⊥
 
 
+        joinClauses(rootClause) {
+            let repeat = false;
+            do {
+                repeat = false;
+                for (let index = 0; index < rootClause.variable.length; index++) {
+                    const element = rootClause.variable[index];
+                    //console.log(element);
+                    if (element.hasVariables) {
+                        this.joinClauses(element);
+                        if (element.operands[0] == rootClause.operands[0]) {
+                            rootClause.variable.splice(index, 1);
+                            rootClause.variable = rootClause.variable.concat(element.variable);
+                            rootClause.operands = rootClause.operands.concat(element.operands);
+                            repeat = true;
+                        }
+                    }
+                }
+            } while (repeat);
+        },
+
+
+        //A⇔(B⇔C)
+        //(¬A∨((¬B∨C)∧(¬C∨B)))∧(¬((¬B∨C)∧(¬C∨B))∨A)
+
+        //A⇔(B∧C)
+        //(¬A∨(B∧C))∧(¬(B∧C)∨A)
+
+        //(¬A∨(¬B∨¬C))∧((¬B∨¬C)∨A)
+        //(¬A∨(B∧C))∧((¬B∨¬C)∨A)
+
+        negateClosuresNegations(rootClause) {
+            //console.log("************");
+            if (rootClause.isNeg) {
+                //console.log(rootClause.isNeg);
+                //console.log(rootClause);
+                //console.log("************");
+                for (let index = 0; index < rootClause.operands.length; index++) {
+                    let element = rootClause.operands[index];
+                    if (element == "∧") rootClause.operands[index] = "∨"; else rootClause.operands[index] = "∧"
+                }
+            }
+
+            for (let i = 0; i < rootClause.variable.length; i++) {
+                let element1 = rootClause.variable[i];
+                if (rootClause.isNeg) {
+                    rootClause.variable[i].isNeg = element1.isNeg !== rootClause.isNeg;
+                }
+                if (element1.hasVariables) {
+                    this.negateClosuresNegations(element1);
+                }
+            }
+            rootClause.isNeg = false;
         },
 
         getAndOrOperands(variables, operands) {
             if (operands[0] == "⇔" && operands.length == 1) {
-                let var2 = [];
+                let varr = [];
+                let vars1 = [];
+                let vars2 = [];
+                if (variables[0].hasVariables) {
+                    let obj = this.createVariables(variables[0].variable, variables[0].operands, variables[0].isNeg !== true);
+                    let objCopy = structuredClone(obj);
+                    vars1.push(objCopy);
+                }
+                else
+                    vars1.push(this.createVariable(variables[0].variable, variables[0].isNeg !== true));
+
+                //vars.push(this.createVariable(variables[1].variable, variables[1].isNeg));
+                if (variables[1].hasVariables)
+                    vars1.push(this.createVariables(variables[1].variable, variables[1].operands, variables[1].isNeg));
+                else
+                    vars1.push(this.createVariable(variables[1].variable, variables[1].isNeg));
+
+
+                varr.push(this.createVariables(vars1, ['∨'], false));
+                //vars.push(this.createVariable(variables[1].variable, variables[1].isNeg !== true));
+
+                if (variables[1].hasVariables) {
+                    let obj = this.createVariables(variables[1].variable, variables[1].operands, variables[1].isNeg !== true)
+                    let objCopy = structuredClone(obj);
+                    vars2.push(objCopy);
+                }
+                else
+                    vars2.push(this.createVariable(variables[1].variable, variables[1].isNeg !== true));
+
+                if (variables[0].hasVariables)
+                    vars2.push(this.createVariables(variables[0].variable, variables[0].operands, variables[0].isNeg));
+                else
+                    vars2.push(this.createVariable(variables[0].variable, variables[0].isNeg));
+                varr.push(this.createVariables(vars2, ['∨'], false));
+
+                return this.createVariables(varr, ['∧'], false);
+            }
+            //JSON.stringify(variables[0]) === JSON.stringify(variables[1]) 
+
+            if (operands[0] == "⇒" && operands.length == 1 && JSON.stringify(variables[0]) === JSON.stringify(variables[1])) { return this.createVariable("⊤", false); }
+
+            if (operands[0] == "⇒" && operands.length == 1) {
                 let vars = [];
                 if (variables[0].hasVariables)
                     vars.push(this.createVariables(variables[0].variable, variables[0].operands, variables[0].isNeg !== true));
                 else
                     vars.push(this.createVariable(variables[0].variable, variables[0].isNeg !== true));
 
-                //vars.push(this.createVariable(variables[1].variable, variables[1].isNeg));
                 if (variables[1].hasVariables)
                     vars.push(this.createVariables(variables[1].variable, variables[1].operands, variables[1].isNeg));
                 else
                     vars.push(this.createVariable(variables[1].variable, variables[1].isNeg));
 
-
-                var2.push(this.createVariables(vars, ["∨"], false));
-                vars = [];
-                //vars.push(this.createVariable(variables[1].variable, variables[1].isNeg !== true));
-
-                if (variables[1].hasVariables)
-                    vars.push(this.createVariables(variables[1].variable, variables[1].operands, variables[1].isNeg !== true));
-                else
-                    vars.push(this.createVariable(variables[1].variable, variables[1].isNeg !== true));
-
-                if (variables[0].hasVariables)
-                    vars.push(this.createVariables(variables[0].variable, variables[0].operands, variables[0].isNeg));
-                else
-                    vars.push(this.createVariable(variables[0].variable, variables[0].isNeg));
-                var2.push(this.createVariables(vars, ["∨"], false));
-
-                return this.createVariables(var2, ["∧"], false);
-            }
-
-            if (operands[0] == "⇒" && operands.length == 1) {
-                return this.createVariables([
-                    (this.createVariable(variables[0].variable, variables[0].isNeg !== true)),
-                    (this.createVariable(variables[1].variable, variables[1].isNeg))], ["∨"], false);
+                return this.createVariables(vars, ['∨'], false);
             }
 
 
@@ -247,17 +339,20 @@ export default {
                 }
                 for (let index = 0; index < operands.length; index++) {
                     let result = getSpecificOperandsTogether(this, variables, operands, index, "⇒", false);
+                    console.log(operands);
+                    console.log(variables);
                     if (result) {
-                        operands.splice(index, result.operands.length);
-                        variables.splice(index, result.operands.length + 1);
+                        console.log(result);
+                        operands.splice(index, 1);
+                        variables.splice(index, 2);
                         variables.splice(index, 0, result);
                     }
                 }
                 for (let index = 0; index < operands.length; index++) {
                     let result = getSpecificOperandsTogether(this, variables, operands, index, "⇔", false);
                     if (result) {
-                        operands.splice(index, result.operands.length);
-                        variables.splice(index, result.operands.length + 1);
+                        operands.splice(index, 1);
+                        variables.splice(index, 2);
                         variables.splice(index, 0, result);
                     }
                 }
@@ -330,10 +425,41 @@ export default {
 
         sendMsg() {
             if (!this.checkMsg()) return false;
-            this.convertToCNF(this.msg);
+            let cnfFormula = this.convertToCNF(this.msg);
+
+            this.$emit('cnfFormula', this.convertCnfToString(cnfFormula).slice(1, -1));
         },
+        //¬(B ⇔ ¬D)     ¬((¬B ∨ ¬C) ⇒ ¬(¬C ∨ ¬B)) ⇔ (¬(D ∨ ¬D) ∧ ¬(D ⇔ A))
+        convertCnfToString(FormulaObj) {
+            if (FormulaObj.variableLength == 1) return "(" + FormulaObj.variable + ")";
+            let formulaLength = FormulaObj.operands.length;
+            let resultString = "";
 
+            if (FormulaObj.isNeg) resultString += "¬";
+            resultString += "("
 
+            for (let index = 0; index < formulaLength; index++) {
+                const element = FormulaObj.variable[index];
+                if (element.hasVariables) {
+                    resultString += this.convertCnfToString(element);
+                } else {
+                    if (element.isNeg)
+                        resultString += "¬";
+                    resultString += element.variable;
+                }
+                resultString += FormulaObj.operands[index];
+            }
+            if (FormulaObj.variable[formulaLength].hasVariables) {
+                resultString += this.convertCnfToString(FormulaObj.variable[formulaLength]);
+            } else {
+                if (FormulaObj.variable[formulaLength].isNeg) resultString += "¬";
+                resultString += FormulaObj.variable[formulaLength].variable;
+            }
+
+            resultString += ")";
+            // console.log(resultString);
+            return resultString;
+        },
 
         checkMsg() {
             let msg = this.msg.replace(/\s+/g, '');
@@ -347,13 +473,22 @@ export default {
             let validOperands = true;
             let validClosureAndOperands = true;
 
+            if (this.msg.length < 2 || this.msg.length > 30) {
+                this.$toast.add({
+                    severity: "error",
+                    summary: "Wrong Input",
+                    detail: "Wrong length. input length must be between 2 - 30 characters.",
+                    life: 3000,
+                });
+                return false;
+            }
+
             for (let i = 0; i < msg.length; i++) {
                 if (!checkCorrectChars(msg[i])) validCorrectChars = false;
                 if (!checkDoubleChars(msg[i])) validDoubleChars = false;
                 if (!checkClosure(msg[i])) validClosures = false;
                 if (!checkClosureAndOperands(msg[i], (msg[i - 1]), (msg[i - 2]))) { validClosureAndOperands = false; }
-                if (i + 1 < msg.length && !checkNeg(msg[i], msg[i + 1]))
-                    validNeg = false;
+                if (i + 1 < msg.length && !checkNeg(msg[i], msg[i + 1])) validNeg = false;
                 if (
                     i + 1 < msg.length &&
                     i - 1 >= 0 &&
@@ -484,31 +619,6 @@ export default {
                 return (letter.toUpperCase().match(/[a-z]/i));
             }
 
-        },
-
-        removeRedundantParentheses(input) {
-            let stack = [];
-            let result = '';
-
-            for (let i = 0; i < input.length; i++) {
-                if (input[i] === '(') {
-                    stack.push(i);
-                } else if (input[i] === ')') {
-                    if (stack.length === 0) {
-                        continue;
-                    }
-                    let start = stack.pop();
-                    if (start === 0 || input[start - 1] === '(') {
-                        result += input.substring(start, i + 1);
-                    } else {
-                        result += input[i];
-                    }
-                } else {
-                    result += input[i];
-                }
-            }
-
-            return result;
         },
     },
 };
