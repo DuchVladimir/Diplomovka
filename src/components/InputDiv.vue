@@ -457,7 +457,6 @@ export default {
             }
 
             resultString += ")";
-            // console.log(resultString);
             return resultString;
         },
 
