@@ -546,16 +546,7 @@ export default {
                     life: 3000,
                 });
 
-            /* console.log("validOperands: " + validOperands);
-                   console.log("validDoubleChars: " + validDoubleChars);
-                   console.log("CorrectChars: " + validCorrectChars);
-                   console.log("Closure: " + validClosures);
-                   console.log("Neg: " + validNeg);
-                   console.log("**********");*/
             console.log("result: " + result);
-
-            // console.log("******************************************************");
-
             return result;
 
             function checkClosure(letter) {
