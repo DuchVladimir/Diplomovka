@@ -94,14 +94,12 @@ export default {
         createVariables(variable, operands, isNeg) {
             let varLength = 0;
 
-            //console.log(variable);
-            //console.log(variable.length);
             if (variable.length == 0) return null;
 
             variable.forEach(element => {
                 varLength += element.variableLength
-                //console.log(varLength);
             });
+
 
             let result = this.getAndOrOperands(variable, operands);
             if (result) {
@@ -135,13 +133,15 @@ export default {
             let operands = []; let variables = [];
             let isNeg = input[this.index - 2] == "¬" ? true : false;
             //console.log("createFormula: " + input);
-            while (input[this.index] !== ")" && this.index < 100) {
+            while (input[this.index] !== ")") {
                 //console.log(input[this.index]);
 
                 if (input[this.index].toUpperCase().match(/[a-z]/i)) {
                     let createdVar = this.createVariable(input[this.index], input[this.index - 1] == "¬" ? true : false);
                     if (createdVar != null)
                         variables.push(createdVar);
+                    else
+                        console.log("Cannot create variable - ERROR")
                 }
 
                 if (correctOperands.includes(input[this.index])) {
@@ -154,6 +154,7 @@ export default {
                 }
                 this.index++;
             }
+
 
 
             if (variables.length == 1 && variables[0].hasVariables == false) {
@@ -186,15 +187,11 @@ export default {
             // console.log(this.createFormula("(" + expression + ")"));
 
             let rootClause = this.createFormula("(" + expression + ")");
-
             // console.log(rootClause);
             // console.log(JSON.stringify(rootClause))
-            let objCopy = structuredClone(rootClause);
-
             this.negateClosuresNegations(rootClause);
             this.joinClauses(rootClause);
-
-            console.log(rootClause);
+            console.log("root", rootClause)
 
             return rootClause;
         },
@@ -211,7 +208,10 @@ export default {
                     //console.log(element);
                     if (element.hasVariables) {
                         this.joinClauses(element);
-                        if (element.operands[0] == rootClause.operands[0]) {
+                        if (element.operands[0] == rootClause.operands[0] &&
+                            element.operands[0] != "⇒" &&
+                            element.operands[0] != "⇔"
+                        ) {
                             rootClause.variable.splice(index, 1);
                             rootClause.variable = rootClause.variable.concat(element.variable);
                             rootClause.operands = rootClause.operands.concat(element.operands);
@@ -296,10 +296,9 @@ export default {
                 return this.createVariables(varr, ['∧'], false);
             }
             //JSON.stringify(variables[0]) === JSON.stringify(variables[1]) 
-
             if (operands[0] == "⇒" && operands.length == 1 && JSON.stringify(variables[0]) === JSON.stringify(variables[1])) { return this.createVariable("⊤", false); }
-
             if (operands[0] == "⇒" && operands.length == 1) {
+                // console.log(variables, operands)
                 let vars = [];
                 if (variables[0].hasVariables)
                     vars.push(this.createVariables(variables[0].variable, variables[0].operands, variables[0].isNeg !== true));
@@ -322,7 +321,7 @@ export default {
         setClosuresByOperands(variables, operands) {
             if (operands.length > 1) {
                 for (let index = 0; index < operands.length; index++) {
-                    let result = getSpecificOperandsTogether(this, variables, operands, index, "∧", true);
+                    let result = getOperandsTogether(this, variables, operands, index, "∧", true);
                     if (result) {
                         operands.splice(index, result.operands.length);
                         variables.splice(index, result.operands.length + 1);
@@ -330,48 +329,93 @@ export default {
                     }
                 }
                 for (let index = 0; index < operands.length; index++) {
-                    let result = getSpecificOperandsTogether(this, variables, operands, index, "∨", true);
+                    let result = getOperandsTogether(this, variables, operands, index, "∨", true);
                     if (result) {
                         operands.splice(index, result.operands.length);
                         variables.splice(index, result.operands.length + 1);
                         variables.splice(index, 0, result);
                     }
                 }
-                for (let index = 0; index < operands.length; index++) {
-                    let result = getSpecificOperandsTogether(this, variables, operands, index, "⇒", false);
-                    console.log(operands);
-                    console.log(variables);
-                    if (result) {
-                        console.log(result);
+                for (let index = operands.length - 1; index > 0; index--) {
+
+                    if (operands[index] == "⇒" || operands[index] == "⇔") {
+                        console.log(operands)
+                        console.log(variables)
+                        let result = this.createVariables([variables[index], variables[index + 1]], operands[index], false)
                         operands.splice(index, 1);
-                        variables.splice(index, 2);
+                        variables.splice(index, 1);
                         variables.splice(index, 0, result);
                     }
+
+                    // console.log(operands)
+                    // console.log(variables)
+
+                    // let result = getSpecificOperandsTogether(this, variables, operands, index);
+                    // console.log(result)
+                    // if (result) {
+                    //     operands.splice(index, 1);
+                    //     // variables.splice(index, 2);
+                    //     variables.splice(index, 0, result);
+                    // }
                 }
-                for (let index = 0; index < operands.length; index++) {
-                    let result = getSpecificOperandsTogether(this, variables, operands, index, "⇔", false);
-                    if (result) {
-                        operands.splice(index, 1);
-                        variables.splice(index, 2);
-                        variables.splice(index, 0, result);
-                    }
-                }
+                // for (let index = 0; index < operands.length; index++) {
+                //     let result = getSpecificOperandsTogether(this, variables, operands, index, "⇒", false);
+                //     console.log(result)
+                //     if (result) {
+                //         operands.splice(index, 1);
+                //         // variables.splice(index, 2);
+                //         variables.splice(index, 0, result);
+                //     }
+                // }
+                // for (let index = 0; index < operands.length; index++) {
+                //     let result = getSpecificOperandsTogether(this, variables, operands, index, "⇔", false);
+                //     if (result) {
+                //         operands.splice(index, 1);
+                //         // variables.splice(index, 2);
+                //         variables.splice(index, 0, result);
+                //     }
+                // }
             }
 
-            function getSpecificOperandsTogether(self, variables, operands, index, specidicOperand, repeat) {
-                // console.log(operands[index]);
-                if (operands[index] == specidicOperand) {
-                    let newOperands = [specidicOperand]
+            //     if (operands[index] == "⇒" || operands[index] == "⇔") {
+
+
+
+            function getOperandsTogether(self, variables, operands, index, specificOperand, repeat) {
+                if (operands[index] == specificOperand) {
+                    let newOperands = [specificOperand]
                     let newVariables = [variables[index], variables[index + 1]]
                     let andCount = 0;
                     if (repeat) {
                         for (let i = index + 1; i < operands.length; i++) {
-                            if (operands[i] == specidicOperand) {
-                                newOperands.push(specidicOperand);
+                            if (operands[i] == specificOperand) {
+                                newOperands.push(specificOperand);
                                 newVariables.push(variables[i + 1])
                             } else break;
                         }
                     }
+                    return self.createVariables(newVariables, newOperands, false);
+                }
+                return false
+            }
+
+            function getSpecificOperandsTogether(self, variables, operands, index, specidicOperand, repeat) {
+                if (operands[index] == specidicOperand && operands.length != 1) {
+                    let newOperands = [specidicOperand]
+                    let secondClosure = self.createVariables(variables.splice(1), operands.slice(1), false)
+                    let newVariables = [variables[index], secondClosure]
+                    operands.splice(index, 1);
+                    return self.createVariables(newVariables, newOperands, false);
+                }
+                return false
+            }
+
+            function getSpecificOperandsTogether(self, variables, operands, index) {
+                if (operands[index] == specidicOperand && operands.length != 1) {
+                    let newOperands = [specidicOperand]
+                    let secondClosure = self.createVariables(variables.splice(1), operands.slice(1), false)
+                    let newVariables = [variables[index], secondClosure]
+                    operands.splice(index, 1)
                     return self.createVariables(newVariables, newOperands, false);
                 }
                 return false
@@ -429,6 +473,7 @@ export default {
 
             this.$emit('cnfFormula', this.convertCnfToString(cnfFormula).slice(1, -1));
         },
+
         //¬(B ⇔ ¬D)     ¬((¬B ∨ ¬C) ⇒ ¬(¬C ∨ ¬B)) ⇔ (¬(D ∨ ¬D) ∧ ¬(D ⇔ A))
         convertCnfToString(FormulaObj) {
             if (FormulaObj.variableLength == 1) return "(" + FormulaObj.variable + ")";
@@ -472,7 +517,7 @@ export default {
             let validOperands = true;
             let validClosureAndOperands = true;
 
-            if (this.msg.length < 2 || this.msg.length > 30) {
+            if (this.msg.length < 2) {
                 this.$toast.add({
                     severity: "error",
                     summary: "Wrong Input",
@@ -545,8 +590,6 @@ export default {
                     detail: "Wrong position of operands",
                     life: 3000,
                 });
-
-            console.log("result: " + result);
             return result;
 
             function checkClosure(letter) {
