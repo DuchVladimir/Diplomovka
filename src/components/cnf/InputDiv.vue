@@ -42,162 +42,31 @@
 
 <script>
 
+import { createRandomFormula } from './../../methods/FormulaGenerator'
+import { reduceToAndOrOperands, createFormula, setClosuresByOperands, createVariable, createVariables } from '../../methods/CnfConvertor';
+
 export default {
     name: "InputDiv",
     data: function () {
         return {
             msg: "",
-            cursorPos: 0,
-            variables: [],
-            operands: [],
-            index: 1,
-            jasom: null
         };
     },
     emits: ['cnfFormula'],
 
     methods: {
         createRandomFormula() {
-            const operators = ['∧', '∨', '⇒', '⇔'];
-            const variables = ['A', 'B', 'C', 'D'];
-
-            function generateFormula(level) {
-                if (level === 0) {
-                    let result = "";
-                    if (Math.random() < 0.5) {
-                        result = `¬${result}`;
-                    }
-                    return `${result}${variables[Math.floor(Math.random() * variables.length)]}`;
-                } else {
-                    const randomOperator = operators[Math.floor(Math.random() * operators.length)];
-                    let formula = `(${generateFormula(level - 1)} ${randomOperator} `;
-                    formula += `${generateFormula(level - 1)})`;
-
-                    if (Math.random() < 0.5) {
-                        formula = `¬${formula}`;
-                    }
-                    return formula;
-                }
-            }
-
-            function randomRange(min, max) {
-                return Math.floor(Math.random() * (max - min + 1)) + min;
-            }
-
-            //this.msg = generateFormula(randomRange(1, 3));
-            this.msg = generateFormula(randomRange(1, 3));
-            if (this.msg[0] != "¬")
-                this.msg = this.msg.substring(1, this.msg.length - 1);
-            return true;
+            this.msg = createRandomFormula()
         },
-
-        createVariables(variable, operands, isNeg) {
-            let varLength = 0;
-
-            if (variable.length == 0) return null;
-
-            variable.forEach(element => {
-                varLength += element.variableLength
-            });
-
-
-            let result = this.getAndOrOperands(variable, operands);
-            if (result) {
-                result.isNeg = isNeg;
-                console.log(result);
-                return result;
-            }
-
-
-            return {
-                isNeg: isNeg,
-                variable: variable,
-                operands: operands,
-                hasVariables: true,
-                variableLength: varLength
-            };
-        },
-
-        createVariable(variable, isNeg) {
-            return {
-                isNeg: isNeg,
-                variable: variable,
-                operands: null,
-                hasVariables: false,
-                variableLength: 1
-            }
-        },
-
-        createFormula(input) {
-            let correctOperands = ["∧", "∨", "⇒", "⇔"];
-            let operands = []; let variables = [];
-            let isNeg = input[this.index - 2] == "¬" ? true : false;
-            //console.log("createFormula: " + input);
-            while (input[this.index] !== ")") {
-                //console.log(input[this.index]);
-
-                if (input[this.index].toUpperCase().match(/[a-z]/i)) {
-                    let createdVar = this.createVariable(input[this.index], input[this.index - 1] == "¬" ? true : false);
-                    if (createdVar != null)
-                        variables.push(createdVar);
-                    else
-                        console.log("Cannot create variable - ERROR")
-                }
-
-                if (correctOperands.includes(input[this.index])) {
-                    operands.push(input[this.index]);
-                }
-
-                if (input[this.index] == "(") {
-                    this.index++;
-                    variables.push(this.createFormula(input));
-                }
-                this.index++;
-            }
-
-
-
-            if (variables.length == 1 && variables[0].hasVariables == false) {
-                return this.createVariable(variables[0].variable, variables[0].isNeg !== isNeg);
-            }
-
-            this.setClosuresByOperands(variables, operands);
-
-
-            while (variables.length == 1 && variables[0].hasVariables == true) {
-                isNeg = (isNeg !== variables[0].isNeg);
-                operands = variables[0].operands;
-                variables = variables[0].variable;
-            }
-            return this.createVariables(variables, operands, isNeg);
-
-        },
-
-
-
-
-        // ¬(A) ⇔ (¬(B) ∧ ¬(D ⇔ C))
-        // (A∨(¬B∧¬((¬D∨C)∧(¬C∨D))))∧(¬(¬B∧¬((¬D∨C)∧(¬C∨D)))∨¬A)
-
-        //A⇔(B⇔C)
-        //(¬A∨((¬B∨C)∧(¬C∨B)))∧(¬((¬B∨C)∧(¬C∨B))∨A)
 
         convertToCNF(expression) {
-            this.index = 1;
-            // console.log(this.createFormula("(" + expression + ")"));
-
-            let rootClause = this.createFormula("(" + expression + ")");
-            // console.log(rootClause);
-            // console.log(JSON.stringify(rootClause))
+            let rootClause = createFormula("(" + expression + ")");
             this.negateClosuresNegations(rootClause);
             this.joinClauses(rootClause);
             console.log("root", rootClause)
 
             return rootClause;
         },
-
-        // ⊤ a ⊥
-
 
         joinClauses(rootClause) {
             let repeat = false;
@@ -222,22 +91,8 @@ export default {
             } while (repeat);
         },
 
-
-        //A⇔(B⇔C)
-        //(¬A∨((¬B∨C)∧(¬C∨B)))∧(¬((¬B∨C)∧(¬C∨B))∨A)
-
-        //A⇔(B∧C)
-        //(¬A∨(B∧C))∧(¬(B∧C)∨A)
-
-        //(¬A∨(¬B∨¬C))∧((¬B∨¬C)∨A)
-        //(¬A∨(B∧C))∧((¬B∨¬C)∨A)
-
         negateClosuresNegations(rootClause) {
-            //console.log("************");
             if (rootClause.isNeg) {
-                //console.log(rootClause.isNeg);
-                //console.log(rootClause);
-                //console.log("************");
                 for (let index = 0; index < rootClause.operands.length; index++) {
                     let element = rootClause.operands[index];
                     if (element == "∧") rootClause.operands[index] = "∨"; else rootClause.operands[index] = "∧"
@@ -254,172 +109,6 @@ export default {
                 }
             }
             rootClause.isNeg = false;
-        },
-
-        getAndOrOperands(variables, operands) {
-            if (operands[0] == "⇔" && operands.length == 1) {
-                let varr = [];
-                let vars1 = [];
-                let vars2 = [];
-                if (variables[0].hasVariables) {
-                    let obj = this.createVariables(variables[0].variable, variables[0].operands, variables[0].isNeg !== true);
-                    let objCopy = structuredClone(obj);
-                    vars1.push(objCopy);
-                }
-                else
-                    vars1.push(this.createVariable(variables[0].variable, variables[0].isNeg !== true));
-
-                //vars.push(this.createVariable(variables[1].variable, variables[1].isNeg));
-                if (variables[1].hasVariables)
-                    vars1.push(this.createVariables(variables[1].variable, variables[1].operands, variables[1].isNeg));
-                else
-                    vars1.push(this.createVariable(variables[1].variable, variables[1].isNeg));
-
-
-                varr.push(this.createVariables(vars1, ['∨'], false));
-                //vars.push(this.createVariable(variables[1].variable, variables[1].isNeg !== true));
-
-                if (variables[1].hasVariables) {
-                    let obj = this.createVariables(variables[1].variable, variables[1].operands, variables[1].isNeg !== true)
-                    let objCopy = structuredClone(obj);
-                    vars2.push(objCopy);
-                }
-                else
-                    vars2.push(this.createVariable(variables[1].variable, variables[1].isNeg !== true));
-
-                if (variables[0].hasVariables)
-                    vars2.push(this.createVariables(variables[0].variable, variables[0].operands, variables[0].isNeg));
-                else
-                    vars2.push(this.createVariable(variables[0].variable, variables[0].isNeg));
-                varr.push(this.createVariables(vars2, ['∨'], false));
-
-                return this.createVariables(varr, ['∧'], false);
-            }
-            //JSON.stringify(variables[0]) === JSON.stringify(variables[1]) 
-            if (operands[0] == "⇒" && operands.length == 1 && JSON.stringify(variables[0]) === JSON.stringify(variables[1])) { return this.createVariable("⊤", false); }
-            if (operands[0] == "⇒" && operands.length == 1) {
-                // console.log(variables, operands)
-                let vars = [];
-                if (variables[0].hasVariables)
-                    vars.push(this.createVariables(variables[0].variable, variables[0].operands, variables[0].isNeg !== true));
-                else
-                    vars.push(this.createVariable(variables[0].variable, variables[0].isNeg !== true));
-
-                if (variables[1].hasVariables)
-                    vars.push(this.createVariables(variables[1].variable, variables[1].operands, variables[1].isNeg));
-                else
-                    vars.push(this.createVariable(variables[1].variable, variables[1].isNeg));
-
-                return this.createVariables(vars, ['∨'], false);
-            }
-
-
-
-            return false;
-        },
-
-        setClosuresByOperands(variables, operands) {
-            if (operands.length > 1) {
-                for (let index = 0; index < operands.length; index++) {
-                    let result = getOperandsTogether(this, variables, operands, index, "∧", true);
-                    if (result) {
-                        operands.splice(index, result.operands.length);
-                        variables.splice(index, result.operands.length + 1);
-                        variables.splice(index, 0, result);
-                    }
-                }
-                for (let index = 0; index < operands.length; index++) {
-                    let result = getOperandsTogether(this, variables, operands, index, "∨", true);
-                    if (result) {
-                        operands.splice(index, result.operands.length);
-                        variables.splice(index, result.operands.length + 1);
-                        variables.splice(index, 0, result);
-                    }
-                }
-                for (let index = operands.length - 1; index > 0; index--) {
-
-                    if (operands[index] == "⇒" || operands[index] == "⇔") {
-                        console.log(operands)
-                        console.log(variables)
-                        let result = this.createVariables([variables[index], variables[index + 1]], operands[index], false)
-                        operands.splice(index, 1);
-                        variables.splice(index, 1);
-                        variables.splice(index, 0, result);
-                    }
-
-                    // console.log(operands)
-                    // console.log(variables)
-
-                    // let result = getSpecificOperandsTogether(this, variables, operands, index);
-                    // console.log(result)
-                    // if (result) {
-                    //     operands.splice(index, 1);
-                    //     // variables.splice(index, 2);
-                    //     variables.splice(index, 0, result);
-                    // }
-                }
-                // for (let index = 0; index < operands.length; index++) {
-                //     let result = getSpecificOperandsTogether(this, variables, operands, index, "⇒", false);
-                //     console.log(result)
-                //     if (result) {
-                //         operands.splice(index, 1);
-                //         // variables.splice(index, 2);
-                //         variables.splice(index, 0, result);
-                //     }
-                // }
-                // for (let index = 0; index < operands.length; index++) {
-                //     let result = getSpecificOperandsTogether(this, variables, operands, index, "⇔", false);
-                //     if (result) {
-                //         operands.splice(index, 1);
-                //         // variables.splice(index, 2);
-                //         variables.splice(index, 0, result);
-                //     }
-                // }
-            }
-
-            //     if (operands[index] == "⇒" || operands[index] == "⇔") {
-
-
-
-            function getOperandsTogether(self, variables, operands, index, specificOperand, repeat) {
-                if (operands[index] == specificOperand) {
-                    let newOperands = [specificOperand]
-                    let newVariables = [variables[index], variables[index + 1]]
-                    let andCount = 0;
-                    if (repeat) {
-                        for (let i = index + 1; i < operands.length; i++) {
-                            if (operands[i] == specificOperand) {
-                                newOperands.push(specificOperand);
-                                newVariables.push(variables[i + 1])
-                            } else break;
-                        }
-                    }
-                    return self.createVariables(newVariables, newOperands, false);
-                }
-                return false
-            }
-
-            function getSpecificOperandsTogether(self, variables, operands, index, specidicOperand, repeat) {
-                if (operands[index] == specidicOperand && operands.length != 1) {
-                    let newOperands = [specidicOperand]
-                    let secondClosure = self.createVariables(variables.splice(1), operands.slice(1), false)
-                    let newVariables = [variables[index], secondClosure]
-                    operands.splice(index, 1);
-                    return self.createVariables(newVariables, newOperands, false);
-                }
-                return false
-            }
-
-            function getSpecificOperandsTogether(self, variables, operands, index) {
-                if (operands[index] == specidicOperand && operands.length != 1) {
-                    let newOperands = [specidicOperand]
-                    let secondClosure = self.createVariables(variables.splice(1), operands.slice(1), false)
-                    let newVariables = [variables[index], secondClosure]
-                    operands.splice(index, 1)
-                    return self.createVariables(newVariables, newOperands, false);
-                }
-                return false
-            }
         },
 
         addSymbol(letter) {
@@ -470,11 +159,9 @@ export default {
         sendMsg() {
             if (!this.checkMsg()) return false;
             let cnfFormula = this.convertToCNF(this.msg);
-
             this.$emit('cnfFormula', this.convertCnfToString(cnfFormula).slice(1, -1));
         },
 
-        //¬(B ⇔ ¬D)     ¬((¬B ∨ ¬C) ⇒ ¬(¬C ∨ ¬B)) ⇔ (¬(D ∨ ¬D) ∧ ¬(D ⇔ A))
         convertCnfToString(FormulaObj) {
             if (FormulaObj.variableLength == 1) return "(" + FormulaObj.variable + ")";
             let formulaLength = FormulaObj.operands.length;

@@ -28,7 +28,7 @@
   </template>
 </Dialog>
 */
-import InputDiv from "../components/InputDiv.vue";
+import InputDiv from "../components/cnf/InputDiv.vue";
 
 export default {
   components: {
