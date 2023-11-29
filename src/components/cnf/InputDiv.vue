@@ -43,7 +43,7 @@
 <script>
 
 import { createRandomFormula } from './../../methods/FormulaGenerator'
-import { reduceToAndOrOperands, createFormula, setClosuresByOperands, createVariable, createVariables } from '../../methods/CnfConvertor';
+import { reduceToAndOrOperands, createFormula, removeClosuresNegations, joinClauses, reduceVariables, sortVariables, setClosuresByOperands, createVariable, createVariables } from '../../methods/CnfConvertor';
 
 export default {
     name: "InputDiv",
@@ -61,54 +61,13 @@ export default {
 
         convertToCNF(expression) {
             let rootClause = createFormula("(" + expression + ")");
-            this.negateClosuresNegations(rootClause);
-            this.joinClauses(rootClause);
+            removeClosuresNegations(rootClause);
+            joinClauses(rootClause);
+            // sortVariables(rootClause);
+            reduceVariables(rootClause);
             console.log("root", rootClause)
 
             return rootClause;
-        },
-
-        joinClauses(rootClause) {
-            let repeat = false;
-            do {
-                repeat = false;
-                for (let index = 0; index < rootClause.variable.length; index++) {
-                    const element = rootClause.variable[index];
-                    //console.log(element);
-                    if (element.hasVariables) {
-                        this.joinClauses(element);
-                        if (element.operands[0] == rootClause.operands[0] &&
-                            element.operands[0] != "⇒" &&
-                            element.operands[0] != "⇔"
-                        ) {
-                            rootClause.variable.splice(index, 1);
-                            rootClause.variable = rootClause.variable.concat(element.variable);
-                            rootClause.operands = rootClause.operands.concat(element.operands);
-                            repeat = true;
-                        }
-                    }
-                }
-            } while (repeat);
-        },
-
-        negateClosuresNegations(rootClause) {
-            if (rootClause.isNeg) {
-                for (let index = 0; index < rootClause.operands.length; index++) {
-                    let element = rootClause.operands[index];
-                    if (element == "∧") rootClause.operands[index] = "∨"; else rootClause.operands[index] = "∧"
-                }
-            }
-
-            for (let i = 0; i < rootClause.variable.length; i++) {
-                let element1 = rootClause.variable[i];
-                if (rootClause.isNeg) {
-                    rootClause.variable[i].isNeg = element1.isNeg !== rootClause.isNeg;
-                }
-                if (element1.hasVariables) {
-                    this.negateClosuresNegations(element1);
-                }
-            }
-            rootClause.isNeg = false;
         },
 
         addSymbol(letter) {
@@ -163,7 +122,8 @@ export default {
         },
 
         convertCnfToString(FormulaObj) {
-            if (FormulaObj.variableLength == 1) return "(" + FormulaObj.variable + ")";
+            if (FormulaObj.variableLength == 1 && FormulaObj.isNeg == true) return "(¬" + FormulaObj.variable + ")";
+            if (FormulaObj.variableLength == 1 && FormulaObj.isNeg == false) return "(" + FormulaObj.variable + ")";
             let formulaLength = FormulaObj.operands.length;
             let resultString = "";
 

@@ -3,14 +3,11 @@ export function createFormula(input) {
   return createFormulaMain(index, input).data;
 
   function createFormulaMain(index, input) {
-    console.log("zaciatok", index);
     let correctOperands = ["∧", "∨", "⇒", "⇔"];
     let operands = [];
     let variables = [];
     let isNeg = input[index - 2] == "¬" ? true : false;
     while (input[index] !== ")") {
-      console.log("input:", input[index]);
-
       if (input[index].toUpperCase().match(/[a-z]/i)) {
         let createdVar = createVariable(
           input[index],
@@ -230,4 +227,248 @@ export function createVariable(variable, isNeg) {
     hasVariables: false,
     variableLength: 1,
   };
+}
+
+export function removeClosuresNegations(rootClause) {
+  if (rootClause.isNeg) {
+    for (let index = 0; index < rootClause.operands.length; index++) {
+      let element = rootClause.operands[index];
+      if (element == "∧") rootClause.operands[index] = "∨";
+      else rootClause.operands[index] = "∧";
+    }
+  }
+
+  for (let i = 0; i < rootClause.variable.length; i++) {
+    let element1 = rootClause.variable[i];
+    if (rootClause.isNeg) {
+      rootClause.variable[i].isNeg = element1.isNeg !== rootClause.isNeg;
+    }
+    if (element1.hasVariables) {
+      removeClosuresNegations(element1);
+    }
+  }
+  rootClause.isNeg = false;
+}
+
+export function joinClauses(rootClause) {
+  let repeat = false;
+  do {
+    repeat = false;
+    for (let index = 0; index < rootClause.variable.length; index++) {
+      const element = rootClause.variable[index];
+      if (element.hasVariables) {
+        joinClauses(element);
+        if (
+          element.operands[0] == rootClause.operands[0] &&
+          element.operands[0] != "⇒" &&
+          element.operands[0] != "⇔"
+        ) {
+          rootClause.variable.splice(index, 1);
+          rootClause.variable = rootClause.variable.concat(element.variable);
+          rootClause.operands = rootClause.operands.concat(element.operands);
+          repeat = true;
+        }
+      }
+    }
+  } while (repeat);
+}
+
+//⊥ ⊤
+export function reduceVariables(rootClause) {
+  let lastClause = true;
+  rootClause.variableLength = rootClause.variable.length;
+  for (let index = 0; index < rootClause.variableLength; index++) {
+    const element = rootClause.variable[index];
+    if (element.hasVariables) {
+      reduceVariables(element);
+      if (element.hasVariables) {
+        lastClause = false;
+      }
+    }
+  }
+
+  if (lastClause) {
+    reduceFinalVariables(rootClause);
+  }
+
+  function reduceFinalVariables(rootClause) {
+    let edited = false;
+    let arr = rootClause.variable;
+    rootClause.variableLength = rootClause.variable.length;
+    reduceTautologyAndContradiction(0);
+
+    for (let i = 0; i < rootClause.variableLength - 1; i++) {
+      for (let j = i + 1; j < rootClause.variableLength; j++) {
+        if (
+          reduceTautologyAndContradiction(j) ||
+          areSame(i, j) ||
+          areOpposite(i, j)
+        ) {
+          i--;
+          j--;
+          if (rootClause.variableLength == 1) {
+            return;
+          }
+          break;
+        }
+      }
+    }
+
+    console.log("after reduceVariables", rootClause);
+
+    function reduceTautologyAndContradiction(index) {
+      if (edited) return false;
+      if (arr[0] === "⊥") {
+        return reduceContradiction();
+      }
+      if (arr[0] === "⊤") {
+        return reduceTautology();
+      }
+      return false;
+
+      function reduceTautology() {
+        if (rootClause.operands != null && rootClause.operands[0] === "∧") {
+          rootClause.variable.splice(index, 1);
+          rootClause.operands.splice(0, 1);
+          rootClause.length--;
+          if (rootClause.length == 1) {
+            edited = true;
+            rootClause.hasVariables = false;
+            rootClause.isNeg = rootClause.variable[0].isNeg;
+            rootClause.variable = rootClause.variable[0].variable;
+            rootClause.operands = null;
+          }
+          return true;
+        }
+        if (rootClause.operands != null && rootClause.operands[0] === "∨") {
+          rootClause.operands = null;
+          rootClause.variable = "⊤";
+          rootClause.hasVariables = false;
+          rootClause.length = 1;
+          edited = true;
+          return true;
+        }
+        return false;
+      }
+
+      function reduceContradiction() {
+        if (rootClause.operands != null && rootClause.operands[0] === "∧") {
+          rootClause.operands = null;
+          rootClause.variable = "⊥";
+          rootClause.hasVariables = false;
+          rootClause.variableLength = 1;
+          edited = true;
+          return true;
+        }
+        if (rootClause.operands != null && rootClause.operands[0] === "∨") {
+          rootClause.variable.splice(index, 1);
+          rootClause.operands.splice(0, 1);
+          rootClause.variableLength--;
+          if (rootClause.variableLength == 1) {
+            edited = true;
+            rootClause.hasVariables = false;
+            rootClause.isNeg = rootClause.variable[0].isNeg;
+            rootClause.variable = rootClause.variable[0].variable;
+            rootClause.operands = null;
+          }
+          return true;
+        }
+        return false;
+      }
+    }
+
+    function areSame(objIndex1, objIndex2) {
+      if (edited) return false;
+      if (
+        rootClause.variable[objIndex1].variable ==
+          rootClause.variable[objIndex2].variable &&
+        rootClause.variable[objIndex1].isNeg ==
+          rootClause.variable[objIndex2].isNeg
+      ) {
+        return reduceConjunction();
+      }
+      return false;
+
+      function reduceConjunction() {
+        rootClause.variable.splice(objIndex1, 1);
+        rootClause.operands.splice(0, 1);
+        rootClause.variableLength--;
+        if (rootClause.variableLength == 1) {
+          edited = true;
+          rootClause.operands = null;
+          rootClause.hasVariables = false;
+          rootClause.isNeg = rootClause.variable[0].isNeg;
+          rootClause.variable = rootClause.variable[0].variable;
+        }
+        return true;
+      }
+    }
+
+    function areOpposite(objIndex1, objIndex2) {
+      if (edited) return false;
+      if (
+        rootClause.variable[objIndex1].variable ==
+          rootClause.variable[objIndex2].variable &&
+        rootClause.variable[objIndex1].isNeg !=
+          rootClause.variable[objIndex2].isNeg
+      ) {
+        let conjunctionResult = reduceConjunction();
+        let disjunctionResult = reduceDisjunction();
+        return conjunctionResult || disjunctionResult;
+      }
+      return false;
+
+      function reduceConjunction() {
+        if (rootClause.operands != null && rootClause.operands[0] === "∧") {
+          rootClause.operands = null;
+          rootClause.variable = "⊥";
+          rootClause.hasVariables = false;
+          rootClause.variableLength = 1;
+          edited = true;
+          return true;
+        }
+      }
+
+      function reduceDisjunction() {
+        if (rootClause.operands != null && rootClause.operands[0] === "∨") {
+          rootClause.operands = null;
+          rootClause.variable = "⊤";
+          rootClause.hasVariables = false;
+          rootClause.variableLength = 1;
+          edited = true;
+          return true;
+        }
+      }
+    }
+  }
+}
+
+export function sortVariables(rootClause) {
+  console.log(rootClause);
+  let lastClause = true;
+  for (let index = 0; index < rootClause.variable.length; index++) {
+    const element = rootClause.variable[index];
+    if (element.hasVariables) {
+      sortVariables(element);
+      lastClause = false;
+    }
+  }
+
+  if (lastClause) {
+    sortFinalClause(rootClause.variable);
+  }
+  for (let index = 0; index < rootClause.variable.length; index++) {}
+
+  function sortFinalClause(variables) {
+    variables.sort((a, b) => {
+      console.log("before sort:", variables);
+
+      const variableComparison = a.variable.localeCompare(b.variable);
+      if (variableComparison === 0) {
+        return a.isNeg - b.isNeg;
+      }
+      console.log("after sort:", variables);
+      return variableComparison;
+    });
+  }
 }
