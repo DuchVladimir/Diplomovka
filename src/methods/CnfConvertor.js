@@ -23,6 +23,7 @@ export function createFormula(input) {
       if (input[index] == "(") {
         index++;
         let newFormula = createFormulaMain(index, input);
+        index++;
         variables.push(newFormula.data);
         index = newFormula.index;
       }
@@ -35,6 +36,7 @@ export function createFormula(input) {
           variables[0].variable,
           variables[0].isNeg !== isNeg
         ),
+        index,
       };
     }
 
@@ -157,8 +159,20 @@ export function setClosuresByOperands(variables, operands) {
         variables.splice(index, 0, result);
       }
     }
+    for (let index = 0; index < operands.length; index++) {
+      let result = getOperandsTogether(variables, operands, index, "⇒", true);
+      if (result) {
+        let operandsLength = result.operands.length;
+        let variablesLength = result.operands.length;
+        applyClosureToImplication(result.variable, result.operands);
+        operands.splice(index, operandsLength);
+        variables.splice(index, variablesLength + 1);
+        variables.splice(index, 0, result);
+      }
+    }
+
     for (let index = operands.length - 1; index > 0; index--) {
-      if (operands[index] == "⇒" || operands[index] == "⇔") {
+      if (operands[index] == "⇔") {
         let result = createVariables(
           [variables[index], variables[index + 1]],
           operands[index],
@@ -168,6 +182,21 @@ export function setClosuresByOperands(variables, operands) {
         variables.splice(index, 1);
         variables.splice(index, 0, result);
       } else console.log("Error - wrong operand");
+    }
+  }
+
+  function applyClosureToImplication(variables, operands) {
+    for (let index = operands.length - 1; index > 0; index--) {
+      if (operands[index] == "⇒") {
+        let result = createVariables(
+          [variables[index], variables[index + 1]],
+          operands[index],
+          false
+        );
+        operands.splice(index, 1);
+        variables.splice(index, 1);
+        variables.splice(index, 0, result);
+      }
     }
   }
 
@@ -181,7 +210,6 @@ export function setClosuresByOperands(variables, operands) {
     if (operands[index] == specificOperand) {
       let newOperands = [specificOperand];
       let newVariables = [variables[index], variables[index + 1]];
-      let andCount = 0;
       if (repeat) {
         for (let i = index + 1; i < operands.length; i++) {
           if (operands[i] == specificOperand) {
@@ -204,11 +232,11 @@ export function createVariables(variable, operands, isNeg) {
     varLength += element.variableLength;
   });
 
-  let result = reduceToAndOrOperands(variable, operands);
-  if (result) {
-    result.isNeg = isNeg;
-    return result;
-  }
+  // let result = reduceToAndOrOperands(variable, operands);
+  // if (result) {
+  //   result.isNeg = isNeg;
+  //   return result;
+  // }
 
   return {
     isNeg: isNeg,
