@@ -163,10 +163,10 @@ export function setClosuresByOperands(variables, operands) {
       let result = getOperandsTogether(variables, operands, index, "⇒", true);
       if (result) {
         let operandsLength = result.operands.length;
-        let variablesLength = result.operands.length;
+        let variablesLength = result.operands.length + 1;
         applyClosureToImplication(result.variable, result.operands);
         operands.splice(index, operandsLength);
-        variables.splice(index, variablesLength + 1);
+        variables.splice(index, variablesLength);
         variables.splice(index, 0, result);
       }
     }
@@ -303,21 +303,15 @@ export function joinClauses(rootClause) {
 
 //⊥ ⊤
 export function reduceVariables(rootClause) {
-  let lastClause = true;
   rootClause.variableLength = rootClause.variable.length;
   for (let index = 0; index < rootClause.variableLength; index++) {
     const element = rootClause.variable[index];
     if (element.hasVariables) {
       reduceVariables(element);
-      if (element.hasVariables) {
-        lastClause = false;
-      }
     }
   }
 
-  if (lastClause) {
-    reduceFinalVariables(rootClause);
-  }
+  reduceFinalVariables(rootClause);
 
   function reduceFinalVariables(rootClause) {
     let edited = false;
@@ -327,11 +321,8 @@ export function reduceVariables(rootClause) {
 
     for (let i = 0; i < rootClause.variableLength - 1; i++) {
       for (let j = i + 1; j < rootClause.variableLength; j++) {
-        if (
-          reduceTautologyAndContradiction(j) ||
-          areSame(i, j) ||
-          areOpposite(i, j)
-        ) {
+        let reducingResult = getReduce(i, j);
+        if (reducingResult) {
           i--;
           j--;
           if (rootClause.variableLength == 1) {
@@ -339,6 +330,18 @@ export function reduceVariables(rootClause) {
           }
           break;
         }
+      }
+    }
+
+    function getReduce(i, j) {
+      if (!i.hasVariables) {
+        return (
+          reduceTautologyAndContradiction(j) ||
+          areSame(i, j) ||
+          areOpposite(i, j)
+        );
+      } else {
+        // return reduceTautologyAndContradiction(j);
       }
     }
 
@@ -359,10 +362,12 @@ export function reduceVariables(rootClause) {
           rootClause.variableLength--;
           if (rootClause.variableLength == 1) {
             edited = true;
-            rootClause.hasVariables = false;
+            // rootClause = rootClause.variable[0];
+            rootClause.operands = rootClause.variable[0].operands;
+            rootClause.variableLength = rootClause.variable[0].variableLength;
+            rootClause.hasVariables = rootClause.variable[0].hasVariables;
             rootClause.isNeg = rootClause.variable[0].isNeg;
             rootClause.variable = rootClause.variable[0].variable;
-            rootClause.operands = null;
           }
           return true;
         }
@@ -392,10 +397,12 @@ export function reduceVariables(rootClause) {
           rootClause.variableLength--;
           if (rootClause.variableLength == 1) {
             edited = true;
-            rootClause.hasVariables = false;
+            // rootClause = rootClause.variable[0];
+            rootClause.operands = rootClause.variable[0].operands;
+            rootClause.variableLength = rootClause.variable[0].variableLength;
+            rootClause.hasVariables = rootClause.variable[0].hasVariables;
             rootClause.isNeg = rootClause.variable[0].isNeg;
             rootClause.variable = rootClause.variable[0].variable;
-            rootClause.operands = null;
           }
           return true;
         }
