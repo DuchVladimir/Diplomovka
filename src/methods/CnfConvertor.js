@@ -232,11 +232,11 @@ export function createVariables(variable, operands, isNeg) {
     varLength += element.variableLength;
   });
 
-  // let result = reduceToAndOrOperands(variable, operands);
-  // if (result) {
-  //   result.isNeg = isNeg;
-  //   return result;
-  // }
+  let result = reduceToAndOrOperands(variable, operands);
+  if (result) {
+    result.isNeg = isNeg;
+    return result;
+  }
 
   return {
     isNeg: isNeg,
@@ -342,14 +342,12 @@ export function reduceVariables(rootClause) {
       }
     }
 
-    console.log("after reduceVariables", rootClause);
-
     function reduceTautologyAndContradiction(index) {
       if (edited) return false;
-      if (arr[0] === "⊥") {
+      if (arr[index].variable === "⊥") {
         return reduceContradiction();
       }
-      if (arr[0] === "⊤") {
+      if (arr[index].variable === "⊤") {
         return reduceTautology();
       }
       return false;
@@ -358,8 +356,8 @@ export function reduceVariables(rootClause) {
         if (rootClause.operands != null && rootClause.operands[0] === "∧") {
           rootClause.variable.splice(index, 1);
           rootClause.operands.splice(0, 1);
-          rootClause.length--;
-          if (rootClause.length == 1) {
+          rootClause.variableLength--;
+          if (rootClause.variableLength == 1) {
             edited = true;
             rootClause.hasVariables = false;
             rootClause.isNeg = rootClause.variable[0].isNeg;
@@ -372,7 +370,7 @@ export function reduceVariables(rootClause) {
           rootClause.operands = null;
           rootClause.variable = "⊤";
           rootClause.hasVariables = false;
-          rootClause.length = 1;
+          rootClause.variableLength = 1;
           edited = true;
           return true;
         }

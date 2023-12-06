@@ -61,10 +61,10 @@ export default {
 
         convertToCNF(expression) {
             let rootClause = createFormula("(" + expression + ")");
-            // removeClosuresNegations(rootClause);
-            // joinClauses(rootClause);
+            removeClosuresNegations(rootClause);
+            joinClauses(rootClause);
             // sortVariables(rootClause);
-            // reduceVariables(rootClause);
+            reduceVariables(rootClause);
             console.log("root", rootClause)
 
             return rootClause;
