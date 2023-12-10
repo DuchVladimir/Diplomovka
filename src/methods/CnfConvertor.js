@@ -268,14 +268,31 @@ export function removeClosuresNegations(rootClause) {
 
   for (let i = 0; i < rootClause.variable.length; i++) {
     let element1 = rootClause.variable[i];
+
     if (rootClause.isNeg) {
       rootClause.variable[i].isNeg = element1.isNeg !== rootClause.isNeg;
     }
+
     if (element1.hasVariables) {
       removeClosuresNegations(element1);
+    } else {
+      removeConstantNegations(element1);
     }
   }
   rootClause.isNeg = false;
+
+  function removeConstantNegations(element) {
+    if (element.isNeg) {
+      if (element.variable === "⊤") {
+        element.variable = "⊥";
+        element.isNeg = false;
+      }
+      if (element.variable === "⊥") {
+        element.variable = "⊤";
+        element.isNeg = false;
+      }
+    }
+  }
 }
 
 export function joinClauses(rootClause) {
