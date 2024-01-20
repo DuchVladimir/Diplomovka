@@ -4,30 +4,11 @@
       <InputDiv v-on:cnfFormula="showCnf" />
       <h2>{{ cnf }}</h2>
     </div>
+    
   </div>
 </template>
 
 <script>
-/*
-    <input v-model="message" placeholder="edit me">
-    <p>Message is: {{ message }}</p>
-    <Button class="p-button-text" @click="display=true"> Click me! </Button>
-    <Button label="Click me!" class="p-button-raised p-button-warning" @click="display=true" />
-    
-*******
-        <Dialog v-model:visible="display">
-    <template #header>
-    <h3>Header</h3>
-  </template>
-
-  Content
-
-  <template #footer>
-    <Button label="No" icon="pi pi-times" class="p-button-text"/>
-        <Button label="Yes" icon="pi pi-check " autofocus />
-  </template>
-</Dialog>
-*/
 import InputDiv from "../components/cnf/InputDiv.vue";
 
 export default {

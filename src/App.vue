@@ -1,99 +1,54 @@
 <script setup>
 import { RouterLink, RouterView } from "vue-router";
 import HelloWorld from "./components/HelloWorld.vue";
+
 </script>
 
 <template>
-  <header>
-    <img
-      alt="Vue logo"
-      class="logo"
-      src="@/assets/logo.svg"
-      width="125"
-      height="125"
-    />
+    <div class="flex flex-col items-center h-screen pt-20 mx-auto max-w-screen-lg w-full">
+      <header class="mb-4 w-full h-20">
+        <p for="search" class="text-gray-900 text-center">
+          This tool generates a visualization of the resolution method for propositional logic formulas. You can specify the logical
+          operators in several different formats. For example, the propositional formula p ∧ q ⇒ ¬r can be written as p
+          && q -> ~r, as p and q => not r, or as p & q => !r. You can also write "/" for ease of entering commands.
+        </p>
+      </header>
 
-    <div class="wrapper">
-      <HelloWorld msg="You did it!" />
+      <div class="input mb-10 h-30">
+        <InputDiv v-on:cnfFormula="showCnf" />
+        <h2>{{ cnf }}</h2>
+      </div>
 
-      <nav>
-        <RouterLink to="/">Home</RouterLink>
-        <RouterLink to="/about">About</RouterLink>
-      </nav>
+      <TreeChart />
+
     </div>
-  </header>
-
-  <RouterView />
 </template>
 
 <script>
+import InputDiv from "./components/cnf/InputDiv.vue";
+import TreeChart from "./components/TreeChart.vue";
+
 export default {
-  data() {
-    return {};
+  components: {
+    InputDiv,
+    TreeChart
   },
+  data() {
+    return {
+      display: false,
+      cnf: "",
+    };
+  },
+  methods: {
+    showCnf(cnfFormula) {
+      this.cnf = cnfFormula;
+    }
+  }
 };
 </script>
 
 <style scoped>
-header {
-  line-height: 1.5;
-  max-height: 100vh;
-}
-
-.logo {
-  display: block;
-  margin: 0 auto 2rem;
-}
-
-nav {
-  width: 100%;
-  font-size: 12px;
-  text-align: center;
-  margin-top: 2rem;
-}
-
-nav a.router-link-exact-active {
-  color: var(--color-text);
-}
-
-nav a.router-link-exact-active:hover {
-  background-color: transparent;
-}
-
-nav a {
-  display: inline-block;
-  padding: 0 1rem;
-  border-left: 1px solid var(--color-border);
-}
-
-nav a:first-of-type {
-  border: 0;
-}
-
-@media (min-width: 1024px) {
-  header {
-    display: flex;
-    place-items: center;
-    padding-right: calc(var(--section-gap) / 2);
-  }
-
-  .logo {
-    margin: 0 2rem 0 0;
-  }
-
-  header .wrapper {
-    display: flex;
-    place-items: flex-start;
-    flex-wrap: wrap;
-  }
-
-  nav {
-    text-align: left;
-    margin-left: -1rem;
-    font-size: 1rem;
-
-    padding: 1rem 0;
-    margin-top: 1rem;
-  }
-}
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 </style>

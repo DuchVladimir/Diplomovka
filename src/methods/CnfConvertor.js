@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 export function createFormula(input) {
   let index = 1;
   return createFormulaMain(index, input).data;
@@ -51,15 +52,16 @@ export function createFormula(input) {
   }
 }
 
-export function reduceToAndOrOperands(variables, operands) {
-  if (
-    (operands[0] == "⇒" || operands[0] == "⇔") &&
-    operands.length == 1 &&
-    JSON.stringify(variables[0]) === JSON.stringify(variables[1])
-  ) {
-    return createVariable("⊤", false);
+ function reduceToAndOrOperands(variables, operands) {
+  if (operands.length != 1 || !(operands[0] == "⇒" || operands[0] == "⇔")) {
+    return false;
   }
-  if (operands[0] == "⇔" && operands.length == 1) {
+
+  // if (JSON.stringify(variables[0]) === JSON.stringify(variables[1])) {
+  //   return createVariable("⊤", false);
+  // }
+
+  if (operands[0] == "⇔") {
     let varr = [];
     let vars1 = [];
     let vars2 = [];
@@ -111,7 +113,8 @@ export function reduceToAndOrOperands(variables, operands) {
 
     return createVariables(varr, ["∧"], false);
   }
-  if (operands[0] == "⇒" && operands.length == 1) {
+
+  if (operands[0] == "⇒") {
     let vars = [];
     if (variables[0].hasVariables)
       vars.push(
@@ -138,6 +141,7 @@ export function reduceToAndOrOperands(variables, operands) {
 
     return createVariables(vars, ["∨"], false);
   }
+
   return false;
 }
 
@@ -251,7 +255,7 @@ export function createVariable(variable, isNeg) {
   return {
     isNeg: isNeg,
     variable: variable,
-    operands: null,
+    operands: [],
     hasVariables: false,
     variableLength: 1,
   };
@@ -259,38 +263,34 @@ export function createVariable(variable, isNeg) {
 
 export function removeClosuresNegations(rootClause) {
   if (rootClause.isNeg) {
-    for (let index = 0; index < rootClause.operands.length; index++) {
-      let element = rootClause.operands[index];
-      if (element == "∧") rootClause.operands[index] = "∨";
-      else rootClause.operands[index] = "∧";
-    }
+    rootClause.operands = rootClause.operands.map((element) =>
+      element === "∧" ? "∨" : "∧"
+    );
   }
-
-  for (let i = 0; i < rootClause.variable.length; i++) {
-    let element1 = rootClause.variable[i];
-
+  rootClause.variable.forEach((clause) => {
     if (rootClause.isNeg) {
-      rootClause.variable[i].isNeg = element1.isNeg !== rootClause.isNeg;
+      clause.isNeg = !clause.isNeg;
     }
 
-    if (element1.hasVariables) {
-      removeClosuresNegations(element1);
+    if (clause.hasVariables) {
+      removeClosuresNegations(clause);
     } else {
-      removeConstantNegations(element1);
+      removeConstantNegations(clause);
     }
-  }
+  });
   rootClause.isNeg = false;
 
   function removeConstantNegations(element) {
-    if (element.isNeg) {
-      if (element.variable === "⊤") {
-        element.variable = "⊥";
-        element.isNeg = false;
-      }
-      if (element.variable === "⊥") {
-        element.variable = "⊤";
-        element.isNeg = false;
-      }
+    if (!element.isNeg) return;
+
+    const negationMap = {
+      "⊤": "⊥",
+      "⊥": "⊤",
+    };
+
+    if (negationMap.hasOwnProperty(element.variable)) {
+      element.variable = negationMap[element.variable];
+      element.isNeg = false;
     }
   }
 }
@@ -304,9 +304,10 @@ export function joinClauses(rootClause) {
       if (element.hasVariables) {
         joinClauses(element);
         if (
-          element.operands[0] == rootClause.operands[0] &&
-          element.operands[0] != "⇒" &&
-          element.operands[0] != "⇔"
+          element.operands[0] == rootClause.operands[0]
+          // &&
+          // element.operands[0] != "⇒" &&
+          // element.operands[0] != "⇔"
         ) {
           rootClause.variable.splice(index, 1);
           rootClause.variable = rootClause.variable.concat(element.variable);
@@ -329,196 +330,496 @@ export function reduceVariables(rootClause) {
   }
 
   reduceFinalVariables(rootClause);
+}
 
-  function reduceFinalVariables(rootClause) {
-    let edited = false;
-    let arr = rootClause.variable;
-    rootClause.variableLength = rootClause.variable.length;
-    reduceTautologyAndContradiction(0);
+function reduceFinalVariables(rootClause) {
+  //   let edited = false;
+  rootClause.variableLength = rootClause.variable.length;
+  reduceTautologyAndContradiction(0);
 
-    for (let i = 0; i < rootClause.variableLength - 1; i++) {
-      for (let j = i + 1; j < rootClause.variableLength; j++) {
-        let reducingResult = getReduce(i, j);
-        if (reducingResult) {
-          i--;
-          j--;
-          if (rootClause.variableLength == 1) {
-            return;
-          }
-          break;
+  for (let i = 0; i < rootClause.variableLength - 1; i++) {
+    for (let j = i + 1; j < rootClause.variableLength; j++) {
+      let reducingResult = getReduce(i, j);
+      if (reducingResult) {
+        i--;
+        j--;
+        if (rootClause.variableLength == 1) {
+          return;
         }
+        break;
       }
     }
+  }
 
-    function getReduce(i, j) {
-      if (!i.hasVariables) {
-        return (
-          reduceTautologyAndContradiction(j) ||
-          areSame(i, j) ||
-          areOpposite(i, j)
-        );
-      } else {
-        // return reduceTautologyAndContradiction(j);
-      }
+  function getReduce(i, j) {
+    if (!i.hasVariables) {
+      return (
+        reduceTautologyAndContradiction(j) || areSame(i, j) || areOpposite(i, j)
+      );
+    } else {
+      // return reduceTautologyAndContradiction(j);
     }
+  }
 
-    function reduceTautologyAndContradiction(index) {
-      if (edited) return false;
-      if (arr[index].variable === "⊥") {
-        return reduceContradiction();
-      }
-      if (arr[index].variable === "⊤") {
-        return reduceTautology();
-      }
-      return false;
-
-      function reduceTautology() {
-        if (rootClause.operands != null && rootClause.operands[0] === "∧") {
-          rootClause.variable.splice(index, 1);
-          rootClause.operands.splice(0, 1);
-          rootClause.variableLength--;
-          if (rootClause.variableLength == 1) {
-            edited = true;
-            // rootClause = rootClause.variable[0];
-            rootClause.operands = rootClause.variable[0].operands;
-            rootClause.variableLength = rootClause.variable[0].variableLength;
-            rootClause.hasVariables = rootClause.variable[0].hasVariables;
-            rootClause.isNeg = rootClause.variable[0].isNeg;
-            rootClause.variable = rootClause.variable[0].variable;
-          }
-          return true;
-        }
-        if (rootClause.operands != null && rootClause.operands[0] === "∨") {
-          rootClause.operands = null;
-          rootClause.variable = "⊤";
-          rootClause.hasVariables = false;
-          rootClause.variableLength = 1;
-          edited = true;
-          return true;
-        }
-        return false;
-      }
-
-      function reduceContradiction() {
-        if (rootClause.operands != null && rootClause.operands[0] === "∧") {
-          rootClause.operands = null;
-          rootClause.variable = "⊥";
-          rootClause.hasVariables = false;
-          rootClause.variableLength = 1;
-          edited = true;
-          return true;
-        }
-        if (rootClause.operands != null && rootClause.operands[0] === "∨") {
-          rootClause.variable.splice(index, 1);
-          rootClause.operands.splice(0, 1);
-          rootClause.variableLength--;
-          if (rootClause.variableLength == 1) {
-            edited = true;
-            // rootClause = rootClause.variable[0];
-            rootClause.operands = rootClause.variable[0].operands;
-            rootClause.variableLength = rootClause.variable[0].variableLength;
-            rootClause.hasVariables = rootClause.variable[0].hasVariables;
-            rootClause.isNeg = rootClause.variable[0].isNeg;
-            rootClause.variable = rootClause.variable[0].variable;
-          }
-          return true;
-        }
-        return false;
-      }
+  function reduceTautologyAndContradiction(index) {
+    if (rootClause.variableLength == 1) return false;
+    if (rootClause.variable[index].variable === "⊥") {
+      return reduceContradiction();
     }
+    if (rootClause.variable[index].variable === "⊤") {
+      return reduceTautology();
+    }
+    return false;
 
-    function areSame(objIndex1, objIndex2) {
-      if (edited) return false;
-      if (
-        rootClause.variable[objIndex1].variable ==
-          rootClause.variable[objIndex2].variable &&
-        rootClause.variable[objIndex1].isNeg ==
-          rootClause.variable[objIndex2].isNeg
-      ) {
-        return reduceConjunction();
-      }
-      return false;
-
-      function reduceConjunction() {
-        rootClause.variable.splice(objIndex1, 1);
+    function reduceTautology() {
+      // if (rootClause.operands != null && rootClause.operands[0] === "∧") {
+      if (rootClause.operands[0] === "∧") {
+        rootClause.variable.splice(index, 1);
         rootClause.operands.splice(0, 1);
         rootClause.variableLength--;
         if (rootClause.variableLength == 1) {
-          edited = true;
-          rootClause.operands = null;
-          rootClause.hasVariables = false;
+          rootClause.operands = rootClause.variable[0].operands;
+          rootClause.variableLength = rootClause.variable[0].variableLength;
+          rootClause.hasVariables = rootClause.variable[0].hasVariables;
           rootClause.isNeg = rootClause.variable[0].isNeg;
           rootClause.variable = rootClause.variable[0].variable;
         }
         return true;
       }
-    }
-
-    function areOpposite(objIndex1, objIndex2) {
-      if (edited) return false;
-      if (
-        rootClause.variable[objIndex1].variable ==
-          rootClause.variable[objIndex2].variable &&
-        rootClause.variable[objIndex1].isNeg !=
-          rootClause.variable[objIndex2].isNeg
-      ) {
-        let conjunctionResult = reduceConjunction();
-        let disjunctionResult = reduceDisjunction();
-        return conjunctionResult || disjunctionResult;
+      // if (rootClause.operands != null && rootClause.operands[0] === "∨") {
+      if (rootClause.operands[0] === "∨") {
+        rootClause.operands = [];
+        rootClause.variable = "⊤";
+        rootClause.hasVariables = false;
+        rootClause.variableLength = 1;
+        return true;
       }
       return false;
+    }
 
-      function reduceConjunction() {
-        if (rootClause.operands != null && rootClause.operands[0] === "∧") {
-          rootClause.operands = null;
-          rootClause.variable = "⊥";
-          rootClause.hasVariables = false;
-          rootClause.variableLength = 1;
-          edited = true;
-          return true;
-        }
+    function reduceContradiction() {
+      // if (rootClause.operands != null && rootClause.operands[0] === "∧") {
+      if (rootClause.operands[0] === "∧") {
+        rootClause.operands = [];
+        rootClause.variable = "⊥";
+        rootClause.hasVariables = false;
+        rootClause.variableLength = 1;
+        // edited = true;
+        return true;
       }
+      // if (rootClause.operands != null && rootClause.operands[0] === "∨") {
+      if (rootClause.operands[0] === "∨") {
+        rootClause.variable.splice(index, 1);
+        rootClause.operands.splice(0, 1);
+        rootClause.variableLength--;
+        if (rootClause.variableLength == 1) {
+          rootClause.operands = rootClause.variable[0].operands;
+          rootClause.variableLength = rootClause.variable[0].variableLength;
+          rootClause.hasVariables = rootClause.variable[0].hasVariables;
+          rootClause.isNeg = rootClause.variable[0].isNeg;
+          rootClause.variable = rootClause.variable[0].variable;
+        }
+        return true;
+      }
+      return false;
+    }
+  }
 
-      function reduceDisjunction() {
-        if (rootClause.operands != null && rootClause.operands[0] === "∨") {
-          rootClause.operands = null;
-          rootClause.variable = "⊤";
-          rootClause.hasVariables = false;
-          rootClause.variableLength = 1;
-          edited = true;
-          return true;
+  function areSame(objIndex1, objIndex2) {
+    if (rootClause.variableLength == 1) return false;
+    if (
+      rootClause.variable[objIndex1].variable ==
+        rootClause.variable[objIndex2].variable &&
+      rootClause.variable[objIndex1].isNeg ==
+        rootClause.variable[objIndex2].isNeg
+    ) {
+      return reduceConjunction();
+    }
+    return false;
+
+    function reduceConjunction() {
+      rootClause.variable.splice(objIndex1, 1);
+      rootClause.operands.splice(0, 1);
+      rootClause.variableLength--;
+      if (rootClause.variableLength == 1) {
+        // edited = true;
+        rootClause.operands = [];
+        rootClause.hasVariables = false;
+        rootClause.isNeg = rootClause.variable[0].isNeg;
+        rootClause.variable = rootClause.variable[0].variable;
+      }
+      return true;
+    }
+  }
+
+  function areOpposite(objIndex1, objIndex2) {
+    if (rootClause.variableLength == 1) return false;
+    if (
+      rootClause.variable[objIndex1].variable ==
+        rootClause.variable[objIndex2].variable &&
+      rootClause.variable[objIndex1].isNeg !=
+        rootClause.variable[objIndex2].isNeg
+    ) {
+      let conjunctionResult = reduceConjunction();
+      let disjunctionResult = reduceDisjunction();
+      return conjunctionResult || disjunctionResult;
+    }
+    return false;
+
+    function reduceConjunction() {
+      // if (rootClause.operands != null && rootClause.operands[0] === "∧") {
+      if (rootClause.operands[0] === "∧") {
+        rootClause.operands = [];
+        rootClause.variable = "⊥";
+        rootClause.hasVariables = false;
+        rootClause.variableLength = 1;
+        // edited = true;
+        return true;
+      }
+    }
+
+    function reduceDisjunction() {
+      // if (rootClause.operands != null && rootClause.operands[0] === "∨") {
+      if (rootClause.operands[0] === "∨") {
+        rootClause.operands = [];
+        rootClause.variable = "⊤";
+        rootClause.hasVariables = false;
+        rootClause.variableLength = 1;
+        // edited = true;
+        return true;
+      }
+    }
+  }
+}
+
+export function distributiveRule1(rootClause) {
+  // if (rootClause.operands[0] === "∨") {
+  let result = branchDistributiveRule(rootClause);
+  //   console.log("DONE1",rootClause);
+  //   // rootClause.operands = rootClause.operands.concat(result.operands);
+  //   // rootClause.variable = rootClause.variable.concat(result.variable);
+  // } else {
+  //   for (let index = 0; index < rootClause.variable.length; index++) {
+  //     const element = rootClause.variable[index];
+  //     if (element.hasVariables) {
+  //       let result = branchDistributiveRule(element);
+  //       console.log("DONE2",element);
+  // // rootClause.operands = rootClause.operands.concat(result.operands);
+  // // rootClause.variable = rootClause.variable.concat(result.variable);
+  // }
+  //   }
+  // }
+
+  // joinClauses(rootClause);
+
+  //((C∨(A∧(B∨D∨A))∨B)∧((A∧(B∨D∨(A∨(D∧C))∨A))∨C))∨(D∧B)
+  //(   (C∨(A∧(B∨D∨A)))  ∧ (A∨C)   )    ∨(D∧B)
+  //(A∨C)∧(D∨B)
+
+  //  ((¬F∧(D∨C))∨¬F∨A)∧((F∧¬A)∨F∨(¬D∧¬C))
+
+  function branchDistributiveRule(clause) {
+    // console.log("branchDistributiveRule");
+    // let clauseLenght = clause.variable.length;
+    // let result1Variables = [];
+    // let result1Operands = [];
+
+    // for (let index = clauseLenght - 1; index >= 0; index--) {
+    //   let variable = clause.variable[index];
+    //   console.log("index:", index);
+    //   if (variable.hasVariables) {
+    //     // if (hasInsideVariables(variable)){
+    //     //     let result = branchDistributiveRule(variable);
+    //     //     console.log("first result1",result)
+    //     //     clause.variable.splice(index, 1,...result.variable);
+    //     //     clause.operands.splice(index, 0,...result.operands);
+    //     //     console.log("changed clause1",clause)
+
+    //     // }
+    //     let result = applyDistributiveRule(index, clause, variable);
+    //     console.log("second result", result);
+    //     console.log(index, result.variable);
+    //     //  result1Variables = result.variable;
+    //     //  result1Operands = result.operands;
+    //     clause.operands = result.operands;
+    //     clause.variable = result.variable;
+    //     break;
+    //   }
+    // }
+
+    //(C∨(A∧(B∨D∨A))∨B)∧((A∧(B∨D∨A))∨C)
+    //((A∧(B∨C))∨C) ∧ ((A∧(B∨C))∨C) ∧ A
+    //(A∧(B∨D∨A))∨C
+    joinClauses(clause);
+    reduceVariables(clause);
+
+    for (let i = clause.variable.length - 1; i >= 0; i--) {
+      let rootVariable = clause.variable[i];
+      if (rootVariable.hasVariables && hasInsideVariables(rootVariable)) {
+        for (let j = rootVariable.variable.length - 1; j >= 0; j--) {
+          let variable = rootVariable.variable[j];
+          console.log("-- variable j", variable);
+          if (variable.hasVariables && hasInsideVariables(variable)) {
+            console.log("rootVariable", rootVariable);
+            console.log("Variable", variable);
+            let result = applyDistributiveRule(j, rootVariable, variable);
+            console.log("first result", result);
+            console.log("-----------");
+            rootVariable.operands = result.operands;
+            rootVariable.variable = result.variable;
+            joinClauses(rootVariable);
+            reduceVariables(rootVariable);
+
+            for (let k = 0; k < rootVariable.variable.length; k++) {
+              if (hasInsideVariables(rootVariable.variable[k])) {
+                j = rootVariable.variable.length;
+              }
+            }
+
+            // i = clause.variable.length - 1
+            // // console.log("changed clause",clause)
+            // break
+          }
         }
       }
     }
+
+    //(   (C∨(A∧(B∨D∨A)))  ∧ A  )    ∨(D∧B)
+
+    // joinClauses(clause);
+    // reduceVariables(clause);
+
+    // console.log("clausule", clause);
+    // return clause;
+  }
+
+  //prva cast
+  // for (let index =clauseLenght-1; index > 0; index--) {
+  //   let variable = clause.variable[index];
+  //   console.log("index:",index);
+  //   if(variable.hasVariables){
+  //     if (hasInsideVariables(variable)){
+  //         let result = branchDistributiveRule(variable);
+  //         console.log("first result1",result)
+  //         clause.variable.splice(index, 1,...result.variable);
+  //         clause.operands.splice(index, 0,...result.operands);
+  //         console.log("changed clause1",clause)
+
+  //     }
+  //     let result = applyDistributiveRule(index, clause, variable);
+  //     console.log("second result",result)
+  //      console.log(index,result.variable)
+  //     //  result1Variables = result.variable;
+  //     //  result1Operands = result.operands;
+  //      clause.operands = result.operands;
+  //      clause.variable = result.variable;
+  //      break;
+  //   }
+  //  };
+
+  function applyDistributiveRule(index, clause, variable) {
+    let resultVariables = [];
+    let resultOperands = [];
+    for (let i = 0; i < variable.variable.length; i++) {
+      let copyVariable = JSON.parse(JSON.stringify(variable.variable[i]));
+      let copyOperands = JSON.parse(JSON.stringify(clause.operands));
+      var otherVariables = JSON.parse(JSON.stringify(clause.variable));
+      otherVariables.splice(index, 1);
+      resultVariables.push(
+        createVariables([...otherVariables, copyVariable], copyOperands, false)
+      );
+      resultOperands.push(variable.operands[0]);
+    }
+    resultOperands.splice(0, 1);
+    let result = createVariables(resultVariables, resultOperands, false);
+    // console.log("result", result);
+
+    return result;
+  }
+
+  function revertoperatorArray(clause) {
+    clause.operands.forEach((operator) => {
+      if (operator === "∧") {
+        operator = "∨";
+      } else {
+        operator = "∧";
+      }
+    });
+  }
+
+  function revertoperator(operator) {
+    if (operator === "∧") {
+      return "∨";
+    } else {
+      return "∧";
+    }
+  }
+
+  function hasInsideVariables(clause) {
+    let result = false;
+    clause.variable.forEach((variable) => {
+      if (variable.hasVariables) result = true;
+    });
+
+    return result;
+  }
+}
+
+export function distributiveRule(rootClause) {
+  let isCnf = true;
+  for (let index = 0; index < rootClause.variable.length; index++) {
+    const variable = rootClause.variable[index];
+    if (variable.hasVariables) isCnf = false;
+  }
+  if (isCnf) return;
+
+  if (rootClause.operands[0] === "∨") {
+    for (let index = rootClause.variable.length - 1; index >= 0; index--) {
+      let variable = rootClause.variable[index];
+      console.log("index:", index);
+      if (variable.hasVariables) {
+        let result = applyDistributiveRule(index, rootClause, variable);
+        console.log("applied distributive Rule");
+        rootClause.operands = result.operands;
+        rootClause.variable = result.variable;
+        joinClauses(rootClause);
+        reduceVariables(rootClause);
+        break;
+      }
+    }
+  }
+
+  for (let i = rootClause.variable.length - 1; i >= 0; i--) {
+    let rootVariable = rootClause.variable[i];
+    if (rootVariable.hasVariables && hasInsideVariables(rootVariable)) {
+      outerLoop: for (let j = rootVariable.variable.length - 1; j >= 0; j--) {
+        let variable = rootVariable.variable[j];
+        if (variable.hasVariables) {
+          let result = applyDistributiveRule(j, rootVariable, variable);
+          console.log("applied distributive Rule");
+          rootClause.variable.splice(i, 1, ...result.variable);
+          rootClause.operands.splice(i, 0, ...result.operands);
+          joinClauses(rootClause);
+          reduceVariables(rootClause);
+          i = rootClause.variable.length;
+          break outerLoop;
+        }
+      }
+    }
+  }
+
+  joinClauses(rootClause);
+  reduceVariables(rootClause);
+
+  function applyDistributiveRule(index, clause, variable) {
+    let resultVariables = [];
+    let resultOperands = [];
+    for (let i = 0; i < variable.variable.length; i++) {
+      let copyVariable = JSON.parse(JSON.stringify(variable.variable[i]));
+      let copyOperands = JSON.parse(JSON.stringify(clause.operands));
+      var otherVariables = JSON.parse(JSON.stringify(clause.variable));
+      otherVariables.splice(index, 1);
+      resultVariables.push(
+        createVariables([...otherVariables, copyVariable], copyOperands, false)
+      );
+      resultOperands.push(variable.operands[0]);
+    }
+    resultOperands.splice(0, 1);
+    let result = createVariables(resultVariables, resultOperands, false);
+    return result;
+  }
+
+  function hasInsideVariables(clause) {
+    let result = false;
+    clause.variable.forEach((variable) => {
+      if (variable.hasVariables) result = true;
+    });
+
+    return result;
   }
 }
 
 export function sortVariables(rootClause) {
-  console.log(rootClause);
-  let lastClause = true;
   for (let index = 0; index < rootClause.variable.length; index++) {
-    const element = rootClause.variable[index];
-    if (element.hasVariables) {
-      sortVariables(element);
-      lastClause = false;
+    sortFinalClause(rootClause.variable[index].variable);
+  }
+
+  function sortFinalClause(variables) {
+    try {
+      variables.sort((a, b) => {
+        const variableComparison = a.variable.localeCompare(b.variable);
+        if (variableComparison === 0) {
+          return a.isNeg - b.isNeg;
+        }
+        return variableComparison;
+      });
+    } catch (error) {
+      return;
     }
   }
 
-  if (lastClause) {
-    sortFinalClause(rootClause.variable);
+  removeDuplicateObjects(rootClause);
+  if (rootClause.operands.length === 0 && rootClause.variable[0].hasVariables) {
+    rootClause.operands = rootClause.variable[0].operands;
+    rootClause.variable = rootClause.variable[0].variable;
   }
-  for (let index = 0; index < rootClause.variable.length; index++) {}
 
-  function sortFinalClause(variables) {
-    variables.sort((a, b) => {
-      console.log("before sort:", variables);
+  sortArrayByTypeAndLength(rootClause.variable);
+}
 
-      const variableComparison = a.variable.localeCompare(b.variable);
-      if (variableComparison === 0) {
-        return a.isNeg - b.isNeg;
-      }
-      console.log("after sort:", variables);
-      return variableComparison;
-    });
+function removeDuplicateObjects(rootClause) {
+  let arr = rootClause.variable;
+  const seen = new Set();
+
+  for (let i = arr.length - 1; i >= 0; i--) {
+    const jsonRepresentation = JSON.stringify(arr[i]);
+
+    if (seen.has(jsonRepresentation)) {
+      arr.splice(i, 1);
+      rootClause.operands.splice(0, 1);
+    } else {
+      seen.add(jsonRepresentation);
+    }
   }
 }
+
+function sortArrayByTypeAndLength(arr) {
+  try {
+    arr.sort((a, b) => {
+      if (typeof a.variable === "string" && typeof b.variable === "string") {
+        return a.variable.localeCompare(b.variable);
+      }
+      if (typeof a.variable === "string") {
+        return -1;
+      }
+      if (typeof b.variable === "string") {
+        return 1;
+      }
+      return a.variable.length - b.variable.length;
+    });
+  } catch (error) {return;}
+}
+
+//¬(¬C ⇔ ¬C)                        --OPRAVIT
+//TESTS
+//¬((F ⇔ ¬F) ⇒ (F ⇒ ¬D))           --true
+//¬(E ⇒ ¬E)                         --E
+
+/*
+((F∧C∧(B∨¬D)∧(¬D∨¬B)∧(((D∧A)∨(¬A∧¬D)∨¬D∨B)∧((D∧¬B)∨((¬D∨¬A)∧(A∨D)))))∨((((¬D∨¬A)∧(A∨D)∧D∧¬B)∨((¬D∨B)∧((D∧A)∨(¬A∧¬D))))∧(¬F∨¬C∨(¬B∧D)∨(D∧B))))∧(((((D∨¬B)∧(B∨¬D))∨(B∧¬D)∨(D∧¬B))∧((F∧D)∨(¬D∧¬F)∨¬A)∧(((¬D∨E)∧(¬E∨D))∨E∨¬F)∧((F∧¬A)∨¬B∨¬C))∨(((((D∧¬E)∨(E∧¬D))∧¬E∧F)∨((¬F∨A)∧B∧C))∧((((¬D∧B)∨(¬B∧D))∧(¬B∨D)∧(¬D∨B))∨((¬F∨¬D)∧(D∨F)∧A))))
+(A∨¬C)∧(A∨F)∧(¬F∨¬A)
+(((¬B∧¬E)∨¬F∨B)∧((¬F∧C)∨¬A∨B)∧((A∧¬B)∨F∨¬C)∧(((F∨C)∧D∧¬C)∨¬E∨(C∧D)∨(¬D∧¬C))∧((E∧(¬C∨¬D)∧(D∨C))∨(¬F∧¬C)∨¬D∨C))∨(((D∧A)∨(¬A∧¬D))∧F∧¬B∧((C∧E)∨(¬E∧¬C)∨(¬A∧¬B)∨(B∧A))∧(((A∨B)∧(¬B∨¬A))∨((¬C∨¬E)∧(E∨C))))
+(((¬B∧A)∨(¬A∧B))∧B∧¬E)∨((¬B∨E)∧(B∨¬A)∧(A∨¬B))
+(((((F∨C)∧((¬F∧B)∨(¬B∧F)))∨((F∨¬B)∧(B∨¬F)∧¬F∧¬C))∧((A∧B)∨(B∧¬A)))∨((¬A∨¬B)∧(¬B∨A)∧((¬F∧¬C)∨((F∨¬B)∧(B∨¬F)))∧((¬F∧B)∨(¬B∧F)∨F∨C))∨((D∧C)∨¬C))∧(((¬D∨¬C)∧C)∨(((((¬F∧¬C)∨((F∨¬B)∧(B∨¬F)))∧((¬F∧B)∨(¬B∧F)∨F∨C))∨((¬A∨¬B)∧(¬B∨A)))∧((A∧B)∨(B∧¬A)∨((F∨C)∧((¬F∧B)∨(¬B∧F)))∨((F∨¬B)∧(B∨¬F)∧¬F∧¬C))))
+((((A∧¬C)∨(C∧¬A))∨((E∧B)∨(¬E∧¬A)))∧((C∧¬E∧¬D∧A)∨((D∨¬A)∧(¬C∨E)))∧¬D∧¬E∧(¬D∨B)∧(¬B∨D))∨(((C∧D)∨(¬F∧B))∧((B∧¬C)∨¬C∨A)∧((C∧¬A)∨¬B∨C))∨((¬B∨¬C)∧(C∨B)∧¬B∧¬F)∨(((¬B∧F)∨A∨C)∧((¬A∧¬C)∨B∨¬F))
+(A∧¬E)∨((B∨¬F)∧(F∨¬B))
+(¬A∧(¬F∨A)∧(¬A∨F))∨((¬C∨¬F)∧(F∨C))
+(¬C∧D)∧(¬F∨E)
+(¬E∨F)∧((A∧¬D)∨(D∧¬A))
+(((¬D∨F)∧(¬F∨D)∧¬B∧¬F)∨((B∨F)∧((D∧¬F)∨(F∧¬D))))∧E∧B∧C∧¬A
+(C∧¬A)∨¬C
+(C∧¬A)
+C∨¬A
+((((((¬C∧F)∨D∨A)∧((¬D∧¬A)∨C∨¬F))∨(D∧¬B)∨¬E∨¬A)∧((((¬A∧¬E)∨(B∧¬A))∧(¬B∨A∨E))∨((A∧¬C)∨(C∧¬A))))∨((((A∨E)∧(¬B∨A))∨(B∧¬A∧¬E))∧((¬A∨C)∧(¬C∨A))∧(((C∨¬F)∧¬D∧¬A)∨((D∨A)∧¬C∧F))∧(¬D∨B)∧E∧A))∧((((E∧B)∨F)∧((B∧D)∨F∨¬B))∨(((¬A∧¬E∧¬B)∨((E∨B)∧(A∨E)))∧(B∨¬D∨¬A)∧((D∧A)∨(¬B∧D)))∨(((¬B∧D∧A)∨((¬D∨¬A)∧(B∨¬D)))∧(A∨E∨B)∧((¬E∧¬B)∨(¬A∧¬E))))∧(((((A∨E∨B)∧((¬E∧¬B)∨(¬A∧¬E)))∨(¬B∧D∧A)∨((¬D∨¬A)∧(B∨¬D)))∧(((B∨¬D∨¬A)∧((D∧A)∨(¬B∧D)))∨(¬A∧¬E∧¬B)∨((E∨B)∧(A∨E))))∨((¬E∨¬B)∧¬F)∨((¬B∨¬D)∧¬F∧B))∧(((((¬C∨¬B)∧F)∨(E∧D)∨(B∧E)∨(¬E∧¬B))∧(((¬E∨¬D)∧(¬B∨¬E)∧(E∨B))∨(C∧B)∨¬F))∨((A∨F)∧(¬F∨¬A))∨((B∨C)∧C∧B))∧(((F∨C)∧(¬B∨A))∨((A∨D)∧(¬D∨¬A)∧A∧¬B)∨((¬A∨B)∧((¬A∧¬D)∨(D∧A))))∧((¬B∧E)∨¬A∨C)∧((E∧F)∨(C∧¬D))∧(¬C∨D∨¬E∨¬F)
+((((E∨¬A)∧¬A∧¬E∧((E∨¬D)∧(D∨¬E)))∨((((¬B∨¬F∨D∨¬E)∧((¬D∧E)∨(B∧F)))∨(((A∧¬F)∨(F∧E)∨(¬E∧¬F))∧(((¬F∨¬E)∧(E∨F))∨¬A∨F)))∧(((¬A∨F)∧(¬F∨¬E)∧(E∨F))∨(((F∧E)∨(¬E∧¬F))∧A∧¬F)∨(B∧F∧¬D∧E)∨((D∨¬E)∧(¬B∨¬F)))))∧((((B∧F∧¬D∧E)∨((D∨¬E)∧(¬B∨¬F)))∧(((¬A∨F)∧(¬F∨¬E)∧(E∨F))∨(((F∧E)∨(¬E∧¬F))∧A∧¬F)))∨(((A∧¬F)∨(F∧E)∨(¬E∧¬F))∧(((¬F∨¬E)∧(E∨F))∨¬A∨F)∧(¬B∨¬F∨D∨¬E)∧((¬D∧E)∨(B∧F)))∨(¬E∧A)∨A∨E∨((¬E∧D)∨(¬D∧E))))∨((((¬E∨A∨(E∧D)∨(¬D∧¬E))∧(((¬E∨¬D)∧(D∨E))∨(E∧¬A))∧((¬E∧B)∨¬C∨¬D)∧((C∧D)∨E∨¬B))∨((¬B∨¬A∨F)∧((A∧¬F)∨(¬F∧B))∧(¬B∨¬E)∧(A∨C)))∧((B∧A∧¬F)∨((¬A∨F)∧(F∨¬B))∨(B∧E)∨(¬A∧¬C)∨(E∧¬A∧(¬E∨¬D)∧(D∨E))∨(((E∧D)∨(¬D∧¬E))∧(¬E∨A))∨((E∨¬B)∧C∧D)∨((¬C∨¬D)∧¬E∧B)))
+*/

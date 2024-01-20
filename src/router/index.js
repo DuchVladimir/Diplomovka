@@ -1,24 +1,26 @@
 import { createRouter, createWebHistory } from "vue-router";
 import HomeView from "../views/HomeView.vue";
 import InputPanelView from "../views/InputPanelView.vue";
+import MonacoEditor from "../views/MonacoEditor.vue";
+import treeChart from "../components/TreeChart.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
-      path: "/",
-      name: "home",
-      component: InputPanelView,
+      path: "/treeChart",
+      name: "treeChart",
+      component: treeChart,
     },
-    /*{
+    {
       path: "/about",
       name: "about",
-      component: AboutView,
+      component: HomeView
       // route level code-splitting
       // this generates a separate chunk (About.[hash].js) for this route
       // which is lazy-loaded when the route is visited.
       //component: () => import("../views/AboutView.vue"),
-    },*/
+    },
   ],
 });
 

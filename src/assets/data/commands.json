@@ -1,0 +1,16 @@
+[
+    { "name": "/neg", "value": "¬" },
+    { "name": "/and", "value": "∧" },
+    { "name": "/or", "value": "∨" },
+    { "name": "/implication", "value": "⇒" },
+    { "name": "/biconditional", "value": "⇔" },
+    { "name": "/true", "value": "⊤" },
+    { "name": "/false", "value": "⊥" },
+    { "name": "/top", "value": "⊤" },
+    { "name": "/bot", "value": "⊥" },
+    { "name": "/land", "value": "∧" },
+    { "name": "/lor", "value": "∨" },
+    { "name": "/rightarrow", "value": "⇒" },
+    { "name": "/leftrightarrow", "value": "⇔" }
+  ]
+  
