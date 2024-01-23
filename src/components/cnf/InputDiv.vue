@@ -31,17 +31,19 @@
     <div class="grid buttons">
       <div class="col-12">
         <div class="p-inputgroup">
-          <PrimeButton label="A" class="p-button-outlined p-button-raised" @click="this.addSymbol('A')" />
-          <PrimeButton label="B" class="p-button-outlined p-button-raised" @click="this.addSymbol('B')" />
+          <PrimeButton label="A" class="p-button-outlined p-button-raised " :class="commonButtonStyle" @click="this.addSymbol('A')" />
+          <PrimeButton label="B" class="p-button-outlined p-button-raised " @click="this.addSymbol('B')" />
           <PrimeButton label="C" class="p-button-outlined p-button-raised" @click="this.addSymbol('C')" />
-          <PrimeButton label="D" class="p-button-outlined p-button-raised" @click="this.addSymbol('D')" />
-          <PrimeButton label="¬" class="p-button-outlined p-button-raised" @click="this.addSymbol('¬')" />
-          <PrimeButton label="∧" class="p-button-outlined p-button-raised" @click="this.addSymbol('∧')" />
-          <PrimeButton label="∨" class="p-button-outlined p-button-raised" @click="this.addSymbol('∨')" />
-          <PrimeButton label="⇒" class="p-button-outlined p-button-raised" @click="this.addSymbol('⇒')" />
-          <PrimeButton label="⇔" class="p-button-outlined p-button-raised" @click="this.addSymbol('⇔')" />
+          <PrimeButton label="D" class="p-button-outlined p-button-raised " @click="this.addSymbol('D')" />
+          <PrimeButton label="¬" class="p-button-outlined p-button-raised " @click="this.addSymbol('¬')" />
+          <PrimeButton label="∧" class="p-button-outlined p-button-raised " @click="this.addSymbol('∧')" />
+          <PrimeButton label="∨" class="p-button-outlined p-button-raised " @click="this.addSymbol('∨')" />
+          <PrimeButton label="⇒" class="p-button-outlined p-button-raised " @click="this.addSymbol('⇒')" />
+          <PrimeButton label="⇔" class="p-button-outlined p-button-raised " @click="this.addSymbol('⇔')" />
           <PrimeButton label="(" class="p-button-outlined p-button-raised" @click="this.addSymbol('(')" />
           <PrimeButton label=")" class="p-button-outlined p-button-raised" @click="this.addSymbol(')')" />
+          <PrimeButton label="⊤" class="p-button-outlined p-button-raised" @click="this.addSymbol('⊤')" />
+          <PrimeButton label="⊥" class="p-button-outlined p-button-raised" @click="this.addSymbol('⊥')" />
           <PrimeButton id="deleteBtn" icon="pi pi-delete-left" class="p-button-raised p-button-warning"
             @click="this.removeLastSymbol()" />
           <PrimeButton icon="pi pi-trash" class="p-button-danger p-button-raised" @click="toggleOverlay" />
@@ -65,6 +67,8 @@ import {
   reduceVariables,
   distributiveRule,
   sortVariables,
+  convertObjectToFinalArray,
+  formulaLog
 } from "../../methods/CnfConvertor";
 import { ref, computed } from 'vue';
 import commandList from '../../assets/data/commands.json';
@@ -149,8 +153,8 @@ export default {
     return {
       msg: "",
       selectedIndex: -1,
-      replacementArray: replacementArray
-    };
+      replacementArray: replacementArray,
+      };
   },
   emits: ["cnfFormula"],
 
@@ -205,14 +209,24 @@ export default {
 
     convertToCNF(expression) {
       let rootClause = createFormula(expression);
-      removeClosuresNegations(rootClause);
-      joinClauses(rootClause);
-      reduceVariables(rootClause);
-      distributiveRule(rootClause);
-      sortVariables(rootClause);
-      console.log("root", rootClause);
+      console.log("createFormula", formulaLog(rootClause));
 
-      return rootClause;
+      removeClosuresNegations(rootClause);
+      console.log("removeClosuresNegations", formulaLog(rootClause));
+
+      joinClauses(rootClause);
+      console.log("joinClauses", formulaLog(rootClause));
+
+      reduceVariables(rootClause);
+      console.log("reduceVariables", formulaLog(rootClause));
+
+      distributiveRule(rootClause);
+      console.log("distributiveRule", formulaLog(rootClause));
+
+      sortVariables(rootClause);
+      console.log("sortVariables", formulaLog(rootClause));
+
+      return convertObjectToFinalArray(rootClause)
     },
 
     addSymbol(letter) {
@@ -273,42 +287,8 @@ export default {
       let cnfFormula = this.convertToCNF(editedExpression);
       this.$emit(
         "cnfFormula",
-        this.convertCnfToString(cnfFormula).slice(1, -1)
+        cnfFormula
       );
-    },
-
-    convertCnfToString(FormulaObj) {
-      if (FormulaObj.variableLength == 1 && FormulaObj.isNeg == true)
-        return "(¬" + FormulaObj.variable + ")";
-      if (FormulaObj.variableLength == 1 && FormulaObj.isNeg == false)
-        return "(" + FormulaObj.variable + ")";
-      let formulaLength = FormulaObj.operands.length;
-      let resultString = "";
-
-      if (FormulaObj.isNeg) resultString += "¬";
-      resultString += "(";
-
-      for (let index = 0; index < formulaLength; index++) {
-        const element = FormulaObj.variable[index];
-        if (element.hasVariables) {
-          resultString += this.convertCnfToString(element);
-        } else {
-          if (element.isNeg) resultString += "¬";
-          resultString += element.variable;
-        }
-        resultString += FormulaObj.operands[index];
-      }
-      if (FormulaObj.variable[formulaLength].hasVariables) {
-        resultString += this.convertCnfToString(
-          FormulaObj.variable[formulaLength]
-        );
-      } else {
-        if (FormulaObj.variable[formulaLength].isNeg) resultString += "¬";
-        resultString += FormulaObj.variable[formulaLength].variable;
-      }
-
-      resultString += ")";
-      return resultString;
     },
 
     checkMsg(text) {
@@ -425,7 +405,7 @@ export default {
       }
 
       function checkCorrectChars(letter) {
-        let correctChars = ["¬", "∧", "∨", "⇒", "⇔", "(", ")"];
+        let correctChars = ["¬", "∧", "∨", "⇒", "⇔", "(", ")","⊥","⊤"];
         return checkCharacters(letter) || correctChars.includes(letter);
       }
 
@@ -463,12 +443,21 @@ export default {
       }
 
       function checkCharacters(letter) {
-        return letter.toUpperCase().match(/[a-z]/i);
+        return letter.toUpperCase().match(/[a-z]/i) || letter === "⊤" || letter === "⊥";
       }
     },
   },
+  computed: {
+    commonButtonStyle() {
+      return "py-2.5 px-5 me-2 mb-2 text-sm font-medium text-gray-900 focus:outline-none " +
+             "bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 " +
+             "focus:z-10 focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 dark:bg-gray-800 " +
+             "dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700";
+    }
+  }
 };
 </script>
+
 
 <style>
 @tailwind base;

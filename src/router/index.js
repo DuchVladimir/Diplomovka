@@ -1,7 +1,5 @@
 import { createRouter, createWebHistory } from "vue-router";
 import HomeView from "../views/HomeView.vue";
-import InputPanelView from "../views/InputPanelView.vue";
-import MonacoEditor from "../views/MonacoEditor.vue";
 import treeChart from "../components/TreeChart.vue";
 
 const router = createRouter({

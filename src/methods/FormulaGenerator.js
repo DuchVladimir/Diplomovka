@@ -1,5 +1,5 @@
 const operators = ["∧", "∨", "⇒", "⇔"];
-const variables = ["A", "B", "C", "D", "E", "F"];
+const variables = ["A", "B", "C", "D", "E", "G"];
 
 export function createRandomFormula() {
   const formula = generateFormula(randomRange(1, 6));

@@ -1,6 +1,7 @@
 import { createApp } from "vue";
 import { createPinia } from "pinia";
 
+import './index.css'
 
 import "primevue/resources/themes/saga-blue/theme.css";
 import "primevue/resources/primevue.min.css";
@@ -21,8 +22,7 @@ import OverlayPanel from "primevue/overlaypanel";
 import Tooltip from "primevue/tooltip";
 import ToastService from "primevue/toastservice";
 import Toast from "primevue/toast";
-
-import './index.css'
+import FileUpload from 'primevue/fileupload';
 
 //import { library } from "@fortawesome/fontawesome-svg-core";
 //import { faHatWizard } from '@fortawesome/free-solid-svg-icons'
@@ -58,6 +58,7 @@ app.component("InputText", InputText);
 app.component("SpeedDial", SpeedDial);
 app.component("OverlayPanel", OverlayPanel);
 app.component("Toast", Toast);
+app.component("FileUpload", FileUpload);
 
 app.directive("tooltip", Tooltip);
 
