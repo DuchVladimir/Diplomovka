@@ -1,0 +1,9 @@
+[
+    { "text": "∧", "value": "\\wedge " },
+    { "text": "∨", "value": "\\vee " },
+    { "text": "⊤", "value": "\\top " },
+    { "text": "⊥", "value": "\\bot " },
+    { "text": "⇔", "value": "\\Leftrightarrow " },
+    { "text": "⇒", "value": "\\Rightarrow " },
+    { "text": "¬", "value": "\\neg " }
+  ]

@@ -2,36 +2,61 @@
   <Toast />
   <div>
     <div id="input" class="col-12 md:col-4 input">
-      <div class="p-inputgroup flex justify-between items-center ">
-        <PrimeButton icon="pi pi-check" class="p-button-info flex-none flex" @click="createRandomFormula">
+      <PrimeButton :class="{ 'negation-button-active': isNegFormula }"
+        class="p-button-outlined p-button-raised negation-button pt-3 pb-3 mb-2" label="Negate formula"
+        @click="negFormula">
+      </PrimeButton>
+      <div class="p-inputgroup flex justify-between items-end ">
+        <PrimeButton icon="pi pi-check" class="p-button-info flex-none flex h-full" @click="createRandomFormula">
           <font-awesome-icon class="p-1.5 h-4.5" icon="fa-solid fa-dice" />
         </PrimeButton>
-        <div class="flex-auto relative">
-          <div>
-            <input type="text" v-model="msg" placeholder="Type here..." ref="input"
-              @keydown.down="handleArrowDown($event)" v-tooltip.top="`Supported characters are: 'a-Z' and '¬∧∨⇒()'. 2 < Suported lenght <30`
-                " @keydown.up="handleArrowUp($event)" @keydown.tab.prevent="handleTab"
-              @keydown.enter.prevent="selectCommand" class="p-2.5 w-full border border-gray-300">
+        <div class="flex-auto">
+          <textarea wrap="soft" rows="4" class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg 
+              border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 
+              dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+            placeholder="Type here..." type="text" v-model="msg" ref="input" @keydown.down="handleArrowDown($event)"
+            @keydown.up="handleArrowUp($event)" @keydown.tab.prevent="handleTab"
+            @keydown.enter="selectCommandWithEnter($event)"></textarea>
 
-            <ul v-if="searchCommand.length"
-              class="w-full rounded bg-white border border-gray-300 px-4 py-2 space-y-1 absolute z-10">
-              <li v-for="(command, index) in searchCommand" :key="command.name" @click="selectCommand(command.name)"
-                :class="{ 'cursor-pointer hover:bg-gray-100 p-1': true, 'bg-gray-100': selectedIndex === index }"
-                tabindex="0">
-                <div class="inline-block p-0.5 mr-1 border border-gray-200 bg-white rounded">
-                  {{ command.value }}</div> {{ command.name }}
-              </li>
-            </ul>
-          </div>
+          <button id="copyToClipboard-a" type="button" :class="{ 'border-green-700': textareaClipboard }"
+            class="clipboard 
+          icon js-clipboard p-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-full border bg-white text-gray-800 
+          border-blue-500 shadow-sm hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 
+          dark:border-gray-700 dark:text-white dark:hover:bg-gray-800 dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600" data-clipboard-target="#hs-clipboard-basic" data-clipboard-action="copy"
+            data-clipboard-success-text="Copied" @click="copyToClipboard(msg)">
+            <svg v-if="!textareaClipboard" class="js-clipboard-default w-4 h-4 group-hover:rotate-6 transition"
+              style="color: #2196f3;" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+              fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+              <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+            </svg>
+            <svg v-else class="js-clipboard-success w-4 h-4 text-green-600" xmlns="http://www.w3.org/2000/svg" width="24"
+              height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"
+              stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+          </button>
+
+          <ul v-if="searchCommand.length"
+            class="w-full rounded bg-white border border-gray-300 px-4 py-2 space-y-1 absolute z-10">
+            <li v-for="(command, index) in searchCommand" :key="command.name"
+              @click="selectCommandWithClick(command.name)"
+              :class="{ 'cursor-pointer hover:bg-gray-100 p-1': true, 'bg-gray-100': selectedIndex === index }"
+              tabindex="0">
+              <div class="inline-block p-0.5 mr-1 border border-gray-200 bg-white rounded">
+                {{ command.value }}</div> {{ command.name }}
+            </li>
+          </ul>
         </div>
-        <PrimeButton icon="pi pi-check" class="p-button-success flex-none" @click="sendMsg" />
+        <PrimeButton icon="pi pi-check" class="p-button-success flex-none h-full" @click="sendMsg" />
       </div>
     </div>
 
     <div class="grid buttons">
       <div class="col-12">
         <div class="p-inputgroup">
-          <PrimeButton label="A" class="p-button-outlined p-button-raised " :class="commonButtonStyle" @click="this.addSymbol('A')" />
+          <PrimeButton label="A" class="p-button-outlined p-button-raised " :class="commonButtonStyle"
+            @click="this.addSymbol('A')" />
           <PrimeButton label="B" class="p-button-outlined p-button-raised " @click="this.addSymbol('B')" />
           <PrimeButton label="C" class="p-button-outlined p-button-raised" @click="this.addSymbol('C')" />
           <PrimeButton label="D" class="p-button-outlined p-button-raised " @click="this.addSymbol('D')" />
@@ -77,7 +102,6 @@ import replacementArray from '../../assets/data/inputReplacements.json';
 export default {
   setup() {
     let msg = ref("")
-
     const searchCommand = computed(() => {
       let inputCommand = getSubstringAfterLastSlash(msg);
       if (inputCommand === "") {
@@ -152,15 +176,28 @@ export default {
   data: function () {
     return {
       msg: "",
-      selectedIndex: -1,
+      selectedIndex: 0,
       replacementArray: replacementArray,
-      };
+      textareaClipboard: false,
+      isNegFormula: false
+    };
   },
-  emits: ["cnfFormula"],
+  emits: ["cnfFormula", "inputChange"],
 
   methods: {
     createRandomFormula() {
       this.msg = createRandomFormula();
+    },
+    copyToClipboard(text) {
+      if (navigator.clipboard && text.length > 0 && !this.textareaClipboard) {
+        navigator.clipboard.writeText(text)
+        this.textareaClipboard = true;
+        console.log("Clipboar")
+        setTimeout(() => {
+          this.textareaClipboard = false;
+        }, 1000);
+      }
+      return
     },
     handleArrowDown(event) {
       if (this.searchCommand.length != 0) {
@@ -191,13 +228,32 @@ export default {
         this.selectedIndex = 0;
       }
     },
-    selectCommand() {
+    negFormula() {
+      if (this.isNegFormula) {
+        if (this.msg.startsWith("¬(") && this.msg.endsWith(")")) {
+          this.msg = this.msg.slice(2, -1);
+        }
+        this.isNegFormula = false;
+      } else {
+        this.msg = "¬(" + this.msg + ")";
+        this.isNegFormula = true;
+      }
+    },
+    selectCommandWithClick() {
+      console.log("selecting");
       try {
         if (this.selectedIndex !== -1) {
           this.selectCommand(this.searchCommand[this.selectedIndex].name);
           this.selectedIndex = 0;
         }
-      } catch (error) { }
+      } catch (error) { console.log(error); }
+    },
+    selectCommandWithEnter(event) {
+      if (this.searchCommand.length != 0) {
+        event.preventDefault();
+        this.selectCommandWithClick();
+        console.log("sss")
+      }
     },
     replaceTextValues(inputString) {
       this.replacementArray.forEach(item => {
@@ -205,8 +261,6 @@ export default {
       });
       return inputString;
     },
-
-
     convertToCNF(expression) {
       let rootClause = createFormula(expression);
       console.log("createFormula", formulaLog(rootClause));
@@ -228,7 +282,6 @@ export default {
 
       return convertObjectToFinalArray(rootClause)
     },
-
     addSymbol(letter) {
       let inputRef = this.$refs.input,
         startPos = inputRef.selectionStart,
@@ -405,7 +458,7 @@ export default {
       }
 
       function checkCorrectChars(letter) {
-        let correctChars = ["¬", "∧", "∨", "⇒", "⇔", "(", ")","⊥","⊤"];
+        let correctChars = ["¬", "∧", "∨", "⇒", "⇔", "(", ")", "⊥", "⊤"];
         return checkCharacters(letter) || correctChars.includes(letter);
       }
 
@@ -450,9 +503,14 @@ export default {
   computed: {
     commonButtonStyle() {
       return "py-2.5 px-5 me-2 mb-2 text-sm font-medium text-gray-900 focus:outline-none " +
-             "bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 " +
-             "focus:z-10 focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 dark:bg-gray-800 " +
-             "dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700";
+        "bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 " +
+        "focus:z-10 focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 dark:bg-gray-800 " +
+        "dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700";
+    }
+  },
+  watch: {
+    msg(inputChange) {
+      this.$emit('inputChange', inputChange);
     }
   }
 };
@@ -474,6 +532,18 @@ export default {
   grid-gap: 5px;
 }
 
+.negation-button {
+  margin-left: 14%;
+  width: 72%;
+  margin-right: 14%;
+}
+
+.negation-button-active {
+  border-color: #0288d1 !important;
+  background-color: #0288d1 !important;
+  color: white !important;
+}
+
 .p-inputgroup>button {
   margin: 1px !important;
 }
@@ -488,6 +558,15 @@ export default {
 .p-buttonset.p-button-danger>.p-button,
 .p-splitbutton.p-button-danger>.p-button {
   border: 1px solid #a60606;
+}
+
+.clipboard {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  margin-top: 4px;
+  margin-left: 4px;
+  border-radius: 25px !important;
 }
 
 #deleteBtn {
