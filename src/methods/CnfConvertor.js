@@ -9,7 +9,11 @@ export function createFormula(input) {
     let variables = [];
     let isNeg = input[index - 2] == "¬" ? true : false;
     while (input[index] !== ")") {
-      if (input[index].toUpperCase().match(/[a-z]/i) || input[index] === "⊤" || input[index] === "⊥" ) {
+      if (
+        input[index].toUpperCase().match(/[a-z]/i) ||
+        input[index] === "⊤" ||
+        input[index] === "⊥"
+      ) {
         let createdVar = createVariable(
           input[index],
           input[index - 1] == "¬" ? true : false
@@ -297,9 +301,7 @@ export function joinClauses(rootClause) {
       const element = rootClause.variable[index];
       if (element.hasVariables) {
         joinClauses(element);
-        if (
-          element.operands[0] == rootClause.operands[0]
-        ) {
+        if (element.operands[0] == rootClause.operands[0]) {
           rootClause.variable.splice(index, 1);
           rootClause.variable = rootClause.variable.concat(element.variable);
           rootClause.operands = rootClause.operands.concat(element.operands);
@@ -473,8 +475,8 @@ function reduceFinalVariables(rootClause) {
 }
 
 export function distributiveRule(rootClause) {
-  formulaLog(rootClause)
-  
+  formulaLog(rootClause);
+
   let isCnf = true;
   for (let index = 0; index < rootClause.variable.length; index++) {
     const variable = rootClause.variable[index];
@@ -504,12 +506,12 @@ export function distributiveRule(rootClause) {
         if (variable.hasVariables) {
           let result = applyDistributiveRule(j, rootVariable, variable);
           reduceVariables(result);
-          if(result.hasVariables && result.operands[0] == "∧") {
+          if (result.hasVariables && result.operands[0] == "∧") {
             rootClause.variable.splice(i, 1, ...result.variable);
             rootClause.operands.splice(i, 0, ...result.operands);
             joinClauses(rootClause);
             reduceVariables(rootClause);
-          }else{
+          } else {
             rootClause.variable.splice(i, 1, result);
             joinClauses(rootClause);
           }
@@ -578,30 +580,41 @@ export function sortVariables(rootClause) {
 
   sortArrayByTypeAndLength(rootClause.variable);
 }
-
+//¬(((¬D ⇒ ¬C) ⇔ (E ⇒ D)) ∧ ¬((C ⇒ ¬D) ∨ (C ∨ ¬D))) ⇔ ¬((¬(C ∨ C) ∧ (E ∧ D)) ∧ ¬((¬A ∧ C) ⇒ ¬(¬D ∧ E)))
 export function convertObjectToFinalArray(obj) {
   let clausesArray = [];
+  let index = 0;
   try {
     obj.variable.forEach((element) => {
-      let variableArray = [];
+      let variableArray = {
+        variables:[],
+        isRoot: true,
+        index: 0,
+        parents: []
+      };
       try {
         element.variable.forEach((element) => {
-          variableArray.push({
+          variableArray.variables.push({
             variable: element.variable,
             isNeg: element.isNeg,
           });
         });
       } catch (error) {
-        variableArray.push({
+        variableArray.variables.push({
           variable: element.variable,
           isNeg: element.isNeg,
         });
       }
+      variableArray.isRoot = true;
+      variableArray.index = index;
+      index++;
       clausesArray.push(variableArray);
     });
   } catch (error) {
-    clausesArray.push([{ variable: obj.variable, isNeg: obj.isNeg }]);
+    clausesArray.push({ variables: [{ variable: obj.variable, isNeg: obj.isNeg }], isRoot: true, index: index});
+    index++;
   }
+  console.log("FinalArray",clausesArray)
   return clausesArray;
 }
 
@@ -675,13 +688,13 @@ export function formulaLog(FormulaObj) {
 export function convertCnfObjectToCnfString(cnfArray) {
   let cnfString = "";
   cnfArray.forEach((element) => {
-    if (element.length == 1) {
-      cnfString += element[0].isNeg
-        ? `¬${element[0].variable}`
-        : element[0].variable;
+    if (element.variables.length == 1) {
+      cnfString += element.variables[0].isNeg
+        ? `¬${element.variables[0].variable}`
+        : element.variables[0].variable;
     } else {
       cnfString += "(";
-      element.forEach((element1) => {
+      element.variables.forEach((element1) => {
         cnfString += element1.isNeg
           ? `¬${element1.variable}`
           : element1.variable;

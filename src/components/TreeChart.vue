@@ -45,81 +45,58 @@ export default {
                             {
                                 name: 'Afdsa fas',
                                 id: 'a',
-                                color: '',
-                                attributes: { pos: '', phone: '' }
+                                color: ''
                             },
                             {
                                 name: 'Bfdsa ds',
                                 id: 'b',
-                                color: '',
-                                attributes: { pos: '', phone: '' }
+                                color: ''
                             },
                             {
                                 name: 'C fds fd',
                                 id: 'c',
-                                parent: 'a,b',
-                                attributes: { pos: '', phone: '' }
+                                parent: 'a,b'
                             },
                             {
                                 name: 'Dhgfd cxz',
                                 id: 'd',
-                                parent: 'a1,c',
-                                attributes: {
-                                    pos: '',
-                                    phone: ''
-                                }
+                                parent: 'a1,c'
                             },
                             {
                                 name: 'Egfdh tws',
                                 id: 'e',
-                                parent: 'd,f',
-                                attributes: {
-                                    pos: '',
-                                    phone: ''
-                                }
+                                parent: 'd,f'
                             },
                             {
                                 name: 'Fgcvds htse',
-                                id: 'f',
-                                attributes: {
-                                    pos: '',
-                                    phone: ''
-                                }
+                                id: 'f'
                             },
                             {
                                 name: 'Ggfds bgfvds',
                                 id: 'g',
-                                parent: 'a2,e',
-                                attributes: {
-                                    pos: '',
-                                    phone: ''
-                                }
+                                parent: 'a2,e'
                             },
                             {
                                 name: 'Afdsb bfdsb sdfds',
                                 id: 'a1',
-                                color: 'red',
-                                attributes: { pos: '', phone: '' }
+                                color: 'red'
                             },
                             {
                                 name: 'Afsdg fsd',
                                 id: 'a2',
-                                color: 'red',
-                                attributes: { pos: '', phone: '' }
+                                color: 'red'
                             },
                             {
                                 name: 'Afsdg fsd',
                                 id: 'n',
                                 color: 'red',
-                                parent: 'g',
-                                attributes: { pos: '', phone: '' }
+                                parent: 'g'
                             },
                             {
                                 name: 'Afsdg fsd',
                                 id: 'm',
                                 color: 'red',
-                                parent: 'n',
-                                attributes: { pos: '', phone: '' }
+                                parent: 'n'
                             }
                         ],
 

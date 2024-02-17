@@ -3,7 +3,8 @@
     <header class="mb-8 w-full h-20">
 
       <p for="search" class="text-gray-900 text-center">
-        This tool generates a visualization of the resolution method for propositional logic formulas. A given formula is not automatically negated. 
+        This tool generates a visualization of the resolution method for propositional logic formulas. A given formula is
+        not automatically negated.
         Negate the formula manually or with the button. You can specify the logical
         operators in several different formats. For example, the propositional formula p ∧ q ⇒ ¬r can be written as p
         && q -> ~r, as p and q => not r, or as p & q => !r. You can also write "/" for ease of entering commands. You can
@@ -83,6 +84,7 @@ import InputDiv from "./components/cnf/InputDiv.vue";
 import TreeChart from "./components/TreeChart.vue";
 import { convertCnfObjectToCnfString } from "./methods/CnfConvertor";
 import { convertObjectToDimas, downloadDimacs } from "./methods/DimacsService";
+import { applyResolutionLogic } from "./methods/ResolutionLogicService";
 import replacementArray from './assets/data/latexReplacments.json';
 
 export default {
@@ -115,7 +117,10 @@ export default {
       this.cnf = cnfFormula
       this.cnfTextRepresentation = convertCnfObjectToCnfString(this.cnf);
       this.dimacsString = convertObjectToDimas(this.cnf)
+      applyResolutionLogic(this.cnf)
+      console.log(this.cnf);
     },
+
     copyToClipboard(text) {
       if (navigator.clipboard && text.length > 0 && !this.textareaClipboard) {
         navigator.clipboard.writeText(text)
@@ -168,13 +173,14 @@ export default {
     },
 
     formatClause(clause) {
-      return clause.map((term) => {
+      return clause.variables.map((term) => {
         const variable = term.isNeg ? `¬${term.variable}` : term.variable;
         return variable;
       }).join('∨');
     },
 
     downloadDimacs() {
+      console.log("download",this.cnf)
       downloadDimacs(convertObjectToDimas(this.cnf))
     },
 
@@ -199,9 +205,16 @@ export default {
     },
 
     parseToCnfArray(parsedArray, dimacsMaxVariableNumber) {
+      let index = 0;
       return parsedArray.map(subArray => {
         const originalSubArray = subArray.slice(0, -1); // Remove the last number
-        return originalSubArray.map(number => {
+        let arrayElement = {
+        variables:[],
+        isRoot: true,
+        index: index
+      }
+      index++;
+      arrayElement.variables = originalSubArray.map(number => {
           const isNeg = number < 0;
           let variable = "";
           if (dimacsMaxVariableNumber < 25) {
@@ -220,6 +233,8 @@ export default {
           }
           return { variable, isNeg };
         });
+
+        return arrayElement;
       });
     },
 
@@ -232,6 +247,7 @@ export default {
       dimacsArray.shift();
       if (clausesLength == dimacsArray.length)
         this.cnf = this.parseToCnfArray(dimacsArray, dimacsMaxVariableNumber)
+      console.log("heloo",this.cnf);
       this.cnfTextRepresentation = convertCnfObjectToCnfString(this.cnf);
     }
   }

@@ -4,7 +4,7 @@ export function convertObjectToDimas(cnfFormula) {
     const variableMap = new Map();
     const resultArray = cnfFormula.map(subArray => {
       const resultSubArray = [];
-      subArray.forEach(({ variable, isNeg }) => {
+      subArray.variables.forEach(({ variable, isNeg }) => {
         let variableNumber;
         if (variableMap.has(variable)) {
           variableNumber = variableMap.get(variable);
@@ -19,7 +19,8 @@ export function convertObjectToDimas(cnfFormula) {
     });
     resultArray.unshift([resultArray.length, dimacsMaxVariableNumber]);
     return arrayToDimacs(resultArray);
-  }catch(error){}
+  }catch(error){
+  }
 
     function arrayToDimacs(arr) {
         let dimacsMaxVariableNumber = arr[0][1];
@@ -36,6 +37,7 @@ export function convertObjectToDimas(cnfFormula) {
   }
 
   export function downloadDimacs(dimacsString) {
+    console.log(dimacsString);
     if(dimacsString === undefined || dimacsString === null || dimacsString === "") return;
     const blob = new Blob([dimacsString], { type: 'text/plain' });
 

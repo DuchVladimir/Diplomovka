@@ -111,7 +111,7 @@ export default {
       let matches = 0
 
       return commandList.filter(command => {
-        if (command.name.toLowerCase().includes(inputCommand.toLowerCase())) {
+        if (("/" + command.name.toLowerCase()).includes(inputCommand.toLowerCase()) || ("\\" + command.name.toLowerCase()).includes(inputCommand.toLowerCase())) {
           matches++
           return command
         }
@@ -142,7 +142,8 @@ export default {
 
     function getSubstringAfterLastSlash(inputRef) {
       const inputString = inputRef.value;
-      const lastSlashIndex = inputString.lastIndexOf('/');
+      const lastSlashIndex = lastIndexOfSlash(inputString) // inputString.lastIndexOf('/');
+
       if (lastSlashIndex === -1) {
         return '';
       }
@@ -151,6 +152,17 @@ export default {
         return inputString.slice(lastSlashIndex);
       }
       return inputString.slice(lastSlashIndex, nextSpaceIndex);
+
+      function lastIndexOfSlash(str) {
+        let lastIndex = -1;
+        for (let i = str.length - 1; i >= 0; i--) {
+          if ((str[i] === '/' && (i === 0 || str[i - 1] !== '\\')) || str[i] === '\\' && (i === 0 || str[i - 1] !== '/')) {
+            lastIndex = i;
+            break;
+          }
+        }
+        return lastIndex;
+      }
     }
 
 
