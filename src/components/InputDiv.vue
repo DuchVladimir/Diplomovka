@@ -84,7 +84,7 @@
 </template>
 
 <script>
-import { createRandomFormula } from "./../../methods/FormulaGenerator";
+import { createRandomFormula } from "./../methods/FormulaGenerator";
 import {
   createFormula,
   removeClosuresNegations,
@@ -94,10 +94,10 @@ import {
   sortVariables,
   convertObjectToFinalArray,
   formulaLog
-} from "../../methods/CnfConvertor";
+} from "../methods/CnfConvertor";
 import { ref, computed } from 'vue';
-import commandList from '../../assets/data/commands.json';
-import replacementArray from '../../assets/data/inputReplacements.json';
+import commandList from '../assets/data/commands.json';
+import replacementArray from '../assets/data/inputReplacements.json';
 
 export default {
   setup() {

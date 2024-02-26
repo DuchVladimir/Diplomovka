@@ -1,7 +1,11 @@
+import * as constants from "./../assets/data/constants";
+
 export function applyResolutionLogic(cnfFormula) {
   // console.log(cnfFormula);
   resolveLogic(cnfFormula);
 }
+
+//¬(((((G ∧ B) ∧ (¬D ⇒ B)) ⇔ ¬(¬(D ⇔ ¬D) ⇔ ¬(¬E ∨ A))) ⇔ ¬(¬(¬(A ∧ D) ∧ ¬(¬A ⇔ ¬C)) ∨ ¬(¬(¬E ∧ D) ⇔ ¬(G ∨ ¬B)))) ⇒ ¬(¬(¬((¬B ∨ ¬D) ∨ (E ⇔ ¬A)) ⇒ ¬(¬(A ∨ E) ⇒ ¬(B ⇔ ¬D))) ∧ (((C ∨ B) ∨ ¬(¬E ⇔ ¬C)) ∧ ((¬G ⇔ ¬D) ∧ (¬C ∨ D)))))
 
 function resolveLogic(variables) {
   let nullFound = false;
@@ -23,11 +27,14 @@ function resolveLogic(variables) {
       if (newVariables.length > 0) {
         newVariables.forEach((obj) => {
           if (!objectExists(variables, obj)) {
-            variables.push(obj);
-          }
-          if (obj.variables.length == 0) {
-            nullFound = true;
-            return;
+            if (obj.variables.length == 0) {
+              variables.push(createAbsordumVariable(obj.index, obj.parents));
+              // console.log(variables);
+              nullFound = true;
+              return;
+            } else {
+              variables.push(obj);
+            }
           }
         });
       }
@@ -35,6 +42,15 @@ function resolveLogic(variables) {
         return;
       }
     }
+  }
+
+  function createAbsordumVariable(index, parentIdArray) {
+    return {
+      variables: [{ variable: constants.FALSE_CHAR, isNeg: false }],
+      isRoot: false,
+      index: index,
+      parents: parentIdArray,
+    };
   }
 
   function objectExists(arr, obj) {
@@ -84,12 +100,6 @@ function compareVariables(variableObject1, variableObject2, length) {
       }
     }
   }
-  // result.forEach((element) => {
-  //   console.log("result:", createString(element.variables));
-  // });
-  // console.log(
-  //   "************************************************************************************************"
-  // );
   return result;
 }
 
