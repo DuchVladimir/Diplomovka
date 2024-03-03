@@ -53,35 +53,21 @@ export default {
         };
     }, methods: {
         parentsArrayToString(array) {
-            try {
                 return array.join(', ');
-            }
-            catch (error) {
-                console.error(error);
-                return "parentsArrayToString";
-            }
         },
+
         getAddressOfParents(obj) {
-            try {
-                console.log(this.treeData);
-                console.log(obj.parents[0]);
-                console.log(obj.parents[1]);
                 const firstParent = this.treeData.find(item => obj.parents[0] === item.index);
                 const secondParent = this.treeData.find(item => obj.parents[1] === item.index);
 
                 const firstParentAddress = firstParent ? this.convertObjectIntoString(firstParent) : '';
                 const secondParentAddress = secondParent ? this.convertObjectIntoString(secondParent) : '';
 
-                console.log(firstParentAddress, secondParentAddress);
                 return [firstParentAddress, secondParentAddress];
-            }
-            catch (error) {
-                console.error(error);
-                return "getAddressOfParents";
-            }
+            
         },
+
         convertObjectIntoString(element) {
-            try {
                 let cnfString = "";
                 if (element.variables.length == 1) {
                     cnfString += element.variables[0].isNeg
@@ -98,18 +84,11 @@ export default {
                     cnfString = cnfString.slice(0, -1);
                     cnfString += ")";
                 }
-                console.log(cnfString);
                 return cnfString;
-            }
-            catch (error) {
-                console.error(error);
-                return "cnfString";
-            }
         }
     }
 };
 </script>
 
 <style scoped>
-/* Add scoped styles if needed */
 </style>

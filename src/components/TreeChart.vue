@@ -119,7 +119,6 @@ export default {
                     treeArray.push(JSON.parse(JSON.stringify(this.allPoints[i])));
                     count++;
                     if (count == this.value) {
-                        console.log(this.value, "==", count)
                         break;
                     }
                 } else {
@@ -190,7 +189,6 @@ export default {
             return new Promise((resolve, reject) => {
                 const checkHeight = () => {
                     setTimeout(() => {
-                        console.log("start");
                         const columnChartElement = document.querySelector('.columnChart');
                         if (columnChartElement) {
                             const svgElement = columnChartElement.querySelector('svg');
