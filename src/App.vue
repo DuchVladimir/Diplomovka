@@ -3,11 +3,13 @@
     <header class="mb-8 w-full h-20">
 
       <p for="search" class="text-gray-900 text-center">
-        This tool generates a visualization of the resolution method for propositional logic formulas. A given formula is
+        This tool generates a visualization of the resolution method for propositional logic formulas. A given formula
+        is
         not automatically negated.
         Negate the formula manually or with the button. You can specify the logical
         operators in several different formats. For example, the propositional formula p ∧ q ⇒ ¬r can be written as p
-        && q -> ~r, as p and q => not r, or as p & q => !r. You can also write "/" for ease of entering commands. You can
+        && q -> ~r, as p and q => not r, or as p & q => !r. You can also write "/" for ease of entering commands. You
+        can
         import DIMACS.txt file or copy the formulas in LaTeX format.
       </p>
 
@@ -24,12 +26,11 @@
       </div>
       <div class="flex pt-2">
         <PrimeButton :label="buttonLabels.CopyInputAsLatexLabel.value" :class="{
-          'border-green-700 text-green-700 important-hover': !buttonLabels.CopyInputAsLatexLabel.isDefault
-        }" class="p-button-outlined p-button-raised w-full pt-3 pb-3 md:me-1"
-          @click="clipboardInputLatex(inputText)" />
+        'border-green-700 text-green-700 important-hover': !buttonLabels.CopyInputAsLatexLabel.isDefault
+      }" class="p-button-outlined p-button-raised w-full pt-3 pb-3 md:me-1" @click="clipboardInputLatex(inputText)" />
         <PrimeButton :label="buttonLabels.CopyCnfAsLatexLabel.value" :class="{
-          'border-green-700 text-green-700 important-hover': !buttonLabels.CopyCnfAsLatexLabel.isDefault
-        }" class="p-button-outlined p-button-raised w-full pt-3 pb-3"
+        'border-green-700 text-green-700 important-hover': !buttonLabels.CopyCnfAsLatexLabel.isDefault
+      }" class="p-button-outlined p-button-raised w-full pt-3 pb-3"
           @click="clipboardCnfLatex(cnfTextRepresentation)" />
       </div>
     </div>
@@ -40,22 +41,62 @@
       <hr class="mt-6">
     </div>
 
-    <div>
+    <div class="flex pt-2 w-full">
+      <PrimeButton label="Show tree" :class="{ 'button-active': showTree }"
+        class="p-button-outlined p-button-raised w-full pt-3 pb-3 md:me-1" @click="() => { showTree = !showTree }" />
+      <PrimeButton label="Show List" :class="{ 'button-active': showList }"
+        class="p-button-outlined p-button-raised w-full pt-3 pb-3 md:me-1" @click="() => { showList = !showList }" />
+      <PrimeButton label="Show table" :class="{ 'button-active': showTable }"
+        class="p-button-outlined p-button-raised w-full pt-3 pb-3" @click="() => { showTable = !showTable }" />
+    </div>
+
+    <div class="mb-4 mt-8" v-if="(showList || showTree) && cnf != null">
+      <ul class="flex flex-wrap items-center justify-center text-gray-900 dark:text-white space-y-2">
+        <li class="mt-2">
+          <p class="md:me-2 p-2 pr-4 font-bold pl-4 rounded-lg border border-gray-200 no-select"
+            :style="{ color: 'rgb(55, 55, 55)', backgroundColor: 'rgb(224, 227, 231)' }">
+            Original CNF clause
+          </p>
+        </li>
+        <li class="mt-2">
+          <p class="md:me-2 p-2 pr-4 font-bold pl-4 rounded-lg border border-gray-200 no-select"
+            :style="{ color: 'rgb(50, 50, 50)', backgroundColor: 'rgb(247, 246, 196)' }">
+            Created by resolution method
+          </p>
+        </li>
+        <li class="mt-2">
+          <p class="md:me-2 p-2 pr-4 font-bold pl-4 rounded-lg border border-gray-200 no-select"
+            :style="{ color: 'rgb(45, 45, 45)', backgroundColor: 'rgb(247, 204, 196)' }">
+            Last added with resolution method
+          </p>
+        </li>
+      </ul>
+    </div>
+
+    <div class="input mb-3 mt-4 h-30 w-full" v-if="showList">
       <ul class="flex flex-wrap items-center justify-center text-gray-900 dark:text-white space-y-2">
         <li v-for="(clause, index) in resolutionCnf" :key="index" class="mt-2">
-          <p class="md:me-2 p-2 pr-4 pl-4 rounded-lg border border-gray-200 no-select">
+          <p class="md:me-2 p-2 pr-4 pl-4 rounded-lg border border-gray-200 no-select"
+            :style="{ backgroundColor: (index === resolutionCnf.length - 1 && !clause.isRoot) ? 'rgb(247, 204, 196)' : (clause.isRoot ? 'rgb(224, 227, 231)' : 'rgb(247, 246, 196)') }">
             {{ formatClause(clause) }}
           </p>
         </li>
       </ul>
     </div>
 
+    <div class="input mb-3 mt-16 h-30 w-full">
+      <TreeChart :treeData="resolutionCnf" :showTree="showTree" />
+    </div>
 
-    <TextField v-if="resolutionCnfTextRepresentation.length > 0" :title="'Resolution CNF form'"
-      :text=resolutionCnfTextRepresentation />
+    <div class="input mb-3 mt-16 h-30 w-full" v-if="showTable">
+      <CnfTable :treeData="resolutionCnf" />
+    </div>
 
-    <TreeChart :treeData="resolutionCnf" />
 
+    <div class="input pb-32 mt-5 h-30 w-full">
+      <TextField v-if="resolutionCnfTextRepresentation.length > 0" :title="'Resolution CNF form'"
+        :text=resolutionCnfTextRepresentation />
+    </div>
   </div>
 </template>
 
@@ -63,6 +104,7 @@
 import InputDiv from "./components/InputDiv.vue";
 import TreeChart from "./components/TreeChart.vue";
 import TextField from "./components/TextField.vue";
+import CnfTable from "./components/CnfTable.vue";
 import { convertCnfObjectToCnfString } from "./methods/CnfConvertor";
 import { convertObjectToDimas, downloadDimacs } from "./methods/DimacsService";
 import { applyResolutionLogic } from "./methods/ResolutionLogicService";
@@ -72,7 +114,8 @@ export default {
   components: {
     InputDiv,
     TreeChart,
-    TextField
+    TextField,
+    CnfTable
   },
   data() {
     return {
@@ -85,6 +128,9 @@ export default {
       textareaClipboard: false,
       resolutionTextareaClipboard: false,
       inputText: "",
+      showTree: false,
+      showTable: false,
+      showList: true,
       buttonLabels: {
         CopyInputAsLatexLabel: {
           value: "Copy input as LaTeX",
@@ -262,7 +308,15 @@ export default {
 
 .cnf-text {
   width: 600px;
+  background-color: rgb(83, 83, 83);
 }
+
+.button-active {
+  border-color: #0288d1 !important;
+  background-color: #0288d1 !important;
+  color: white !important;
+}
+
 
 .text-area-width {
   width: 70%;
@@ -283,4 +337,3 @@ export default {
   user-select: none;
 }
 </style>
-

@@ -22,6 +22,7 @@ import OverlayPanel from "primevue/overlaypanel";
 import Tooltip from "primevue/tooltip";
 import ToastService from "primevue/toastservice";
 import Toast from "primevue/toast";
+import Slider from 'primevue/slider';
 import FileUpload from 'primevue/fileupload';
 
 //import { library } from "@fortawesome/fontawesome-svg-core";
@@ -58,6 +59,7 @@ app.component("InputText", InputText);
 app.component("SpeedDial", SpeedDial);
 app.component("OverlayPanel", OverlayPanel);
 app.component("Toast", Toast);
+app.component("Slider", Slider);
 app.component("FileUpload", FileUpload);
 
 app.directive("tooltip", Tooltip);
