@@ -18,16 +18,19 @@
     <div class="input mb-3 h-30">
       <InputDiv v-on:cnfFormula="showCnf" v-on:inputChange="handleInputChange" />
       <div class="flex pt-2">
-        <PrimeButton label="Export cnf as DIMACS" class="p-2 pr-4 pl-4 rounded-lg border w-full border-gray-200 no-select p-button-outlined p-button-raised md:me-1"
+        <PrimeButton label="Export cnf as DIMACS"
+          class="p-2 pr-4 pl-4 rounded-lg border w-full border-gray-200 no-select p-button-outlined p-button-raised md:me-1"
           @click="downloadDimacs" />
-        <PrimeButton label="Import cnf from DIMACS" class="p-2 pr-4 pl-4 rounded-lg border w-full border-gray-200 no-select p-button-outlined p-button-raised"
+        <PrimeButton label="Import cnf from DIMACS"
+          class="p-2 pr-4 pl-4 rounded-lg border w-full border-gray-200 no-select p-button-outlined p-button-raised"
           @click="triggerFileInput" />
         <input type="file" ref="fileInput" @change="handleFileUpload" accept=".txt" style="display: none;">
       </div>
       <div class="flex pt-2">
         <PrimeButton :label="buttonLabels.CopyInputAsLatexLabel.value" :class="{
         'border-green-700 text-green-700 important-hover': !buttonLabels.CopyInputAsLatexLabel.isDefault
-      }" class="p-2 pr-4 pl-4 rounded-lg border w-full border-gray-200 no-select p-button-outlined p-button-raised md:me-1" @click="clipboardInputLatex(inputText)" />
+      }" class="p-2 pr-4 pl-4 rounded-lg border w-full border-gray-200 no-select p-button-outlined p-button-raised md:me-1"
+          @click="clipboardInputLatex(inputText)" />
         <PrimeButton :label="buttonLabels.CopyCnfAsLatexLabel.value" :class="{
         'border-green-700 text-green-700 important-hover': !buttonLabels.CopyCnfAsLatexLabel.isDefault
       }" class="p-2 pr-4 pl-4 rounded-lg border w-full border-gray-200 no-select p-button-outlined p-button-raised"
@@ -43,18 +46,22 @@
 
     <div class="flex pt-8 w-full">
       <PrimeButton label="Interactive resolution method" :class="{ 'button-active': resolutionState == 'manual' }"
-        class="p-2 pr-4 pl-4 rounded-lg border w-full border-gray-200 no-select p-button-outlined p-button-raised md:me-1" @click="showManualResolution" />
+        class="p-2 pr-4 pl-4 rounded-lg border w-full border-gray-200 no-select p-button-outlined p-button-raised md:me-1"
+        @click="showManualResolution" />
       <PrimeButton label="Automatic resolution method result" :class="{ 'button-active': resolutionState == 'auto' }"
-        class="p-2 pr-4 pl-4 rounded-lg border w-full border-gray-200 no-select p-button-outlined p-button-raised" @click="showAutoResolution" />
+        class="p-2 pr-4 pl-4 rounded-lg border w-full border-gray-200 no-select p-button-outlined p-button-raised"
+        @click="showAutoResolution" />
     </div>
     <div class="flex pt-2 w-full">
       <PrimeButton label="Show tree" :class="{ 'button-active': showTree }"
-        class="p-2 pr-4 pl-4 rounded-lg border w-full border-gray-200 no-select p-button-outlined p-button-raised md:me-1" @click="() => { showTree = !showTree }" />
+        class="p-2 pr-4 pl-4 rounded-lg border w-full border-gray-200 no-select p-button-outlined p-button-raised md:me-1"
+        @click="() => { showTree = !showTree }" />
       <PrimeButton label="Show List" :class="{ 'button-active': showList }"
-        class="p-2 pr-4 pl-4 rounded-lg border w-full border-gray-200 no-select p-button-outlined p-button-raised md:me-1" :disabled="resolutionState == 'manual'"
-        @click="() => { showList = !showList }" />
+        class="p-2 pr-4 pl-4 rounded-lg border w-full border-gray-200 no-select p-button-outlined p-button-raised md:me-1"
+        :disabled="resolutionState == 'manual'" @click="() => { showList = !showList }" />
       <PrimeButton label="Show table" :class="{ 'button-active': showTable }"
-        class="p-2 pr-4 pl-4 rounded-lg border w-full border-gray-200 no-select p-button-outlined p-button-raised" @click="() => { showTable = !showTable }" />
+        class="p-2 pr-4 pl-4 rounded-lg border w-full border-gray-200 no-select p-button-outlined p-button-raised"
+        @click="() => { showTable = !showTable }" />
     </div>
 
     <div class="mb-4 mt-8" v-if="(showList || showTree) && cnf != null">
@@ -81,22 +88,31 @@
     </div>
 
     <div class="input mb-3 mt-4 h-30 w-full" v-if="showList">
+      <div class="w-full items-center justify-center mx-auto text-center"
+        v-if="resolutionState == 'manual' && userResolutionCnf.length > 0">Filter</div>
       <ul class="flex flex-wrap items-center justify-center text-gray-900 dark:text-white space-y-2">
         <li v-for="(variable, index) in allVariablesList" :key="index" class="mt-2">
-          <PrimeButton class=" md:me-2 p-2 pr-4 pl-4 rounded-lg border border-gray-200 no-select p-button-outlined p-button-raised"
-             @click="markClause(clause)">
+          <PrimeButton
+            class=" md:me-2 p-2 pr-4 pl-4 rounded-lg border border-gray-200 no-select p-button-outlined p-button-raised"
+            :class="{ 'button-active': isVariableToggled(variable, false) }" @click="toggleVariable(variable, false)">
             {{ variable }}
+          </PrimeButton>
+          <PrimeButton
+            class=" md:me-2 p-2 pr-4 pl-4 rounded-lg border border-gray-200 no-select p-button-outlined p-button-raised"
+            :class="{ 'button-active': isVariableToggled(variable, true) }" @click="toggleVariable(variable, true)">
+            {{ "¬" + variable }}
           </PrimeButton>
         </li>
       </ul>
-      <div class="w-full items-center justify-center mx-auto text-center"
+
+      <div class="w-full items-center justify-center mx-auto text-center mt-8"
         v-if="resolutionState == 'manual' && userResolutionCnf.length > 0">Click on
         clause to choose it for resolution</div>
       <ul class="flex flex-wrap items-center justify-center text-gray-900 dark:text-white space-y-2">
-        <li v-for="(clause, index) in resolutionCnf" :key="index" class="mt-2">
+        <li v-for="(clause, index) in resolutionListCnf" :key="index" class="mt-2">
           <button class="md:me-2 p-2 pr-4 pl-4 rounded-lg border border-gray-200 no-select"
             :disabled="resolutionState !== 'manual'" @click="markClause(clause)"
-            :style="{ backgroundColor: isClauseSelected(clause) ? 'rgb(153, 187, 240)' : ((index === resolutionCnf.length - 1 && !clause.isRoot) ? 'rgb(247, 204, 196)' : (clause.isRoot ? 'rgb(224, 227, 231)' : 'rgb(247, 246, 196)')) }">
+            :style="{ backgroundColor: isClauseSelected(clause) ? 'rgb(153, 187, 240)' : ((clause.index === userResolutionCnf[userResolutionCnf.length - 1].index && !clause.isRoot) ? 'rgb(247, 204, 196)' : (clause.isRoot ? 'rgb(224, 227, 231)' : 'rgb(247, 246, 196)')) }">
             {{ formatClause(clause) }}
           </button>
         </li>
@@ -144,9 +160,12 @@ export default {
       originalResolutionCnfTextRepresentation: "",
       cnf: null,
       resolutionCnf: [],
+      resolutionListCnf: [],
       originalResolutionCnf: [],
       userResolutionCnf: [],
       allVariablesList: [],
+      allVariablesToggleList: [],
+      filterStatus: "and",
       dimacsString: "",
       textareaClipboard: false,
       resolutionTextareaClipboard: false,
@@ -176,34 +195,70 @@ export default {
   },
 
   methods: {
+
+    showCnf(cnfFormula) {
+      this.cnf = cnfFormula
+      this.cnfTextRepresentation = convertCnfObjectToCnfString(this.cnf);
+      this.dimacsString = convertObjectToDimas(this.cnf)
+      this.allVariablesList = this.getAllVariableList();
+
+      this.userResolutionCnf = JSON.parse(JSON.stringify(this.cnf))
+
+      this.originalResolutionCnf = JSON.parse(JSON.stringify(this.cnf))
+
+      applyResolutionLogic(this.originalResolutionCnf)
+      this.resolutionCnfTextRepresentation = convertCnfObjectToCnfString(this.userResolutionCnf);
+      this.originalResolutionCnfTextRepresentation = convertCnfObjectToCnfString(this.originalResolutionCnf);
+
+      if (this.resolutionState == "auto") {
+        this.resolutionCnf = JSON.parse(JSON.stringify(this.originalResolutionCnf))
+      } else {
+        this.resolutionCnf = JSON.parse(JSON.stringify(this.cnf))
+      }
+      this.resolutionListCnf = this.filterByToggleList(JSON.parse(JSON.stringify(this.resolutionCnf)));
+      console.log(this.cnf);
+    },
+
     showManualResolution() {
       this.resolutionState = 'manual';
       this.showList = true;
       this.resolutionCnf = JSON.parse(JSON.stringify(this.userResolutionCnf));
+      this.resolutionListCnf = this.filterByToggleList(JSON.parse(JSON.stringify(this.resolutionCnf)));
       this.resolutionCnfTextRepresentation = convertCnfObjectToCnfString(this.userResolutionCnf);
     },
     showAutoResolution() {
       this.resolutionState = 'auto';
       this.selectedClauses = [];
       this.resolutionCnf = JSON.parse(JSON.stringify(this.originalResolutionCnf));
+      this.resolutionListCnf = this.filterByToggleList(JSON.parse(JSON.stringify(this.resolutionCnf)));
       this.resolutionCnfTextRepresentation = this.originalResolutionCnfTextRepresentation;
     },
-    showCnf(cnfFormula) {
-      this.cnf = cnfFormula
-      this.cnfTextRepresentation = convertCnfObjectToCnfString(this.cnf);
-      this.dimacsString = convertObjectToDimas(this.cnf)
-      this.allVariablesList = this.getAllVariableList();
-      console.log("list of vars: ",this.allVariablesList);
 
-      this.userResolutionCnf = JSON.parse(JSON.stringify(this.cnf))
-      this.resolutionCnf = JSON.parse(JSON.stringify(this.cnf))
-      this.originalResolutionCnf = JSON.parse(JSON.stringify(this.cnf))
-      applyResolutionLogic(this.originalResolutionCnf)
-      this.resolutionCnfTextRepresentation = convertCnfObjectToCnfString(this.userResolutionCnf);
-      this.originalResolutionCnfTextRepresentation = convertCnfObjectToCnfString(this.originalResolutionCnf);
+    toggleVariable(variable, isNeg) {
+      const index = this.allVariablesToggleList.findIndex(item => item.variable === variable && item.isNeg === isNeg);
+      if (index === -1) {
+        this.allVariablesToggleList.push({ variable, isNeg });
+      } else {
+        this.allVariablesToggleList.splice(index, 1);
+      }
+      this.resolutionListCnf = this.filterByToggleList(JSON.parse(JSON.stringify(this.resolutionCnf)));
+    },
 
-      // updateTree(this.resolutionCnfTextRepresentation);
-      console.log(this.cnf);
+    filterByToggleList(data) {
+      if (this.allVariablesToggleList.length == 0) {
+        return data;
+      }
+      return data.filter(item => {
+        return this.allVariablesToggleList.some(toggleItem => {
+          return item.variables.some(variable => {
+            return variable.variable === toggleItem.variable && variable.isNeg === toggleItem.isNeg;
+          });
+        });
+      });
+    },
+
+    isVariableToggled(variable, isNeg) {
+      return this.allVariablesToggleList.some(item => item.variable === variable && item.isNeg === isNeg);
     },
 
     getAllVariableList() {
@@ -213,7 +268,7 @@ export default {
           allVariablesSet.add(variable.variable);
         });
       });
-      return Array.from(allVariablesSet);
+      return Array.from(allVariablesSet).sort();
     },
 
     copyToClipboard(text) {
@@ -249,6 +304,10 @@ export default {
       if (resultClause != null) {
         this.userResolutionCnf.push(resultClause);
         this.resolutionCnf.push(resultClause);
+        this.resolutionListCnf = this.filterByToggleList(JSON.parse(JSON.stringify(this.resolutionCnf)));
+        if (!this.resolutionListCnf.includes(resultClause)) {
+          this.resolutionListCnf.push(resultClause);
+        }
       }
     },
 

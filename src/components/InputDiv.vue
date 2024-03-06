@@ -554,15 +554,29 @@ export default {
 .p-button.p-button-warning,
 .p-buttonset.p-button-warning>.p-button,
 .p-splitbutton.p-button-warning>.p-button {
+	background: #fab710;
+	color: #ffffff;
+	border-color: #fab710;
+}
+
+.p-button.p-button-warning:enabled:hover, .p-buttonset.p-button-warning > .p-button:enabled:hover, .p-splitbutton.p-button-warning > .p-button:enabled:hover {
   border: 1px solid #b98607;
   color: #b98607;
+  background: #ffffff;
 }
 
 .p-button.p-button-danger,
 .p-buttonset.p-button-danger>.p-button,
 .p-splitbutton.p-button-danger>.p-button {
+  background: #c02929;
+	color: #ffffff;
+	border-color: #c02929;
+}
+
+.p-button.p-button-danger:enabled:hover, .p-buttonset.p-button-danger > .p-button:enabled:hover, .p-splitbutton.p-button-danger > .p-button:enabled:hover {
   border: 1px solid #a60606;
   color: #a60606;
+  background: #ffffff;
 }
 
 .p-inputgroup-addon:first-child, .p-inputgroup button:first-child, .p-inputgroup input:first-child, .p-inputgroup > .p-inputwrapper:first-child, .p-inputgroup > .p-inputwrapper:first-child > .p-inputtext {
@@ -576,11 +590,26 @@ export default {
 }
 
 .p-button.p-button-info, .p-buttonset.p-button-info > .p-button, .p-splitbutton.p-button-info > .p-button {
-	color: #027abc;
+
+  background: #027abc;
+	color: #ffffff;
+	border-color: #027abc;
+}
+
+.p-button.p-button-info:enabled:hover, .p-buttonset.p-button-info > .p-button:enabled:hover, .p-splitbutton.p-button-info > .p-button:enabled:hover {
+  color: #027abc;
+  background: #ffffff;
 }
 
 .p-button.p-button-success, .p-buttonset.p-button-success > .p-button, .p-splitbutton.p-button-success > .p-button {
-	color: #689F38;
+  background: #5e8f32;
+	color: #ffffff;
+	border-color: #5e8f32
+}
+
+.p-button.p-button-success:enabled:hover, .p-buttonset.p-button-success > .p-button:enabled:hover, .p-splitbutton.p-button-success > .p-button:enabled:hover {
+  color: #689F38;
+  background: #ffffff;
 }
 
 .clipboard {

@@ -56,4 +56,13 @@ export default {
 .resolution-text-area-width{
     width: 100%;
 }
+
+.clipboard {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  margin-top: 4px;
+  margin-left: 4px;
+  border-radius: 25px !important;
+}
 </style>
