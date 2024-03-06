@@ -125,6 +125,7 @@ export default {
                     treeArray.push(JSON.parse(JSON.stringify(this.allPoints[i])));
                 }
             }
+            if(treeArray.length == 0) { return; }
             treeArray[treeArray.length - 1].color = 'rgb(247, 204, 196)';
 
             this.setCorrectHeight();
@@ -315,10 +316,8 @@ export default {
     watch: {
         treeData(newData) {
             this.clearTreeData();
-            console.log("NEW DataTransfer, HURAYYY, ", newData);
             this.receivedValue = newData;
             this.addData(this.createPointsArrayFromData(newData))
-            console.log(this.chartOptions);
         },
         spinnerValue(newData) {
             clearTimeout(this.timeoutId);

@@ -1,11 +1,8 @@
 import * as constants from "./../assets/data/constants";
 
 export function applyResolutionLogic(cnfFormula) {
-  // console.log(cnfFormula);
   resolveLogic(cnfFormula);
 }
-
-//¬(((((G ∧ B) ∧ (¬D ⇒ B)) ⇔ ¬(¬(D ⇔ ¬D) ⇔ ¬(¬E ∨ A))) ⇔ ¬(¬(¬(A ∧ D) ∧ ¬(¬A ⇔ ¬C)) ∨ ¬(¬(¬E ∧ D) ⇔ ¬(G ∨ ¬B)))) ⇒ ¬(¬(¬((¬B ∨ ¬D) ∨ (E ⇔ ¬A)) ⇒ ¬(¬(A ∨ E) ⇒ ¬(B ⇔ ¬D))) ∧ (((C ∨ B) ∨ ¬(¬E ⇔ ¬C)) ∧ ((¬G ⇔ ¬D) ∧ (¬C ∨ D)))))
 
 function resolveLogic(variables) {
   let nullFound = false;
@@ -17,19 +14,18 @@ function resolveLogic(variables) {
       j < (variables[i].isRoot ? rootLength : i);
       j++
     ) {
-      // console.log("called!", i, j);
       let currentSet2 = variables[j];
       let newVariables = compareVariables(
         currentSet1,
         currentSet2,
         variables.length
       );
+
       if (newVariables.length > 0) {
         newVariables.forEach((obj) => {
           if (!objectExists(variables, obj)) {
             if (obj.variables.length == 0) {
               variables.push(createAbsordumVariable(obj.index, obj.parents));
-              // console.log(variables);
               nullFound = true;
               return;
             } else {
@@ -43,21 +39,25 @@ function resolveLogic(variables) {
       }
     }
   }
+}
 
-  function createAbsordumVariable(index, parentIdArray) {
-    return {
-      variables: [{ variable: constants.FALSE_CHAR, isNeg: false }],
-      isRoot: false,
-      index: index,
-      parents: parentIdArray,
-    };
+export function resolveLogicalVariables(variables, variable1, variable2) {
+  let newVariables = compareVariables(
+    variable1,
+    variable2,
+    variables.length
+  );
+  let obj = newVariables[0];
+  if (newVariables.length > 0) {
+    if (!objectExists(variables, obj)) {
+      if (obj.variables.length == 0) {
+        return createAbsordumVariable(obj.index, obj.parents);
+      } else {
+        return obj;
+      }
+    }
   }
-
-  function objectExists(arr, obj) {
-    return arr.some(
-      (item) => JSON.stringify(item.variables) === JSON.stringify(obj.variables)
-    );
-  }
+  return null;
 }
 
 function compareVariables(variableObject1, variableObject2, length) {
@@ -156,4 +156,19 @@ function createnewObject(variables, isRoot, index, parentIdArray) {
       }
     });
   }
+}
+
+function createAbsordumVariable(index, parentIdArray) {
+  return {
+    variables: [{ variable: constants.FALSE_CHAR, isNeg: false }],
+    isRoot: false,
+    index: index,
+    parents: parentIdArray,
+  };
+}
+
+function objectExists(arr, obj) {
+  return arr.some(
+    (item) => JSON.stringify(item.variables) === JSON.stringify(obj.variables)
+  );
 }

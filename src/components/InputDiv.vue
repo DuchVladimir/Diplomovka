@@ -3,7 +3,7 @@
   <div>
     <div id="input" class="col-12 md:col-4 input">
       <PrimeButton :class="{ 'negation-button-active': isNegFormula }"
-        class="p-button-outlined p-button-raised negation-button pt-3 pb-3 mb-2" label="Negate formula"
+        class="p-2 pr-4 pl-4 rounded-lg border border-gray-200 no-select p-button-outlined p-button-raised negation-button pt-3 pb-3 mb-2" label="Negate formula"
         @click="negFormula">
       </PrimeButton>
       <div class="p-inputgroup flex justify-between items-end ">
@@ -55,27 +55,26 @@
     <div class="grid buttons">
       <div class="col-12">
         <div class="p-inputgroup">
-          <PrimeButton label="A" class="p-button-outlined p-button-raised " :class="commonButtonStyle"
-            @click="this.addSymbol('A')" />
-          <PrimeButton label="B" class="p-button-outlined p-button-raised " @click="this.addSymbol('B')" />
-          <PrimeButton label="C" class="p-button-outlined p-button-raised" @click="this.addSymbol('C')" />
-          <PrimeButton label="D" class="p-button-outlined p-button-raised " @click="this.addSymbol('D')" />
-          <PrimeButton label="¬" class="p-button-outlined p-button-raised " @click="this.addSymbol('¬')" />
-          <PrimeButton label="∧" class="p-button-outlined p-button-raised " @click="this.addSymbol('∧')" />
-          <PrimeButton label="∨" class="p-button-outlined p-button-raised " @click="this.addSymbol('∨')" />
-          <PrimeButton label="⇒" class="p-button-outlined p-button-raised " @click="this.addSymbol('⇒')" />
-          <PrimeButton label="⇔" class="p-button-outlined p-button-raised " @click="this.addSymbol('⇔')" />
-          <PrimeButton label="(" class="p-button-outlined p-button-raised" @click="this.addSymbol('(')" />
-          <PrimeButton label=")" class="p-button-outlined p-button-raised" @click="this.addSymbol(')')" />
-          <PrimeButton label="⊤" class="p-button-outlined p-button-raised" @click="this.addSymbol('⊤')" />
-          <PrimeButton label="⊥" class="p-button-outlined p-button-raised" @click="this.addSymbol('⊥')" />
-          <PrimeButton id="deleteBtn" icon="pi pi-delete-left" class="p-button-raised p-button-warning"
+          <PrimeButton label="A" class="p-2 pr-4 pl-4 rounded-lg border w-full border-gray-200 no-select p-button-outlined p-button-raised " @click="this.addSymbol('A')" />
+          <PrimeButton label="B" class="p-2 pr-4 pl-4 rounded-lg border w-full border-gray-200 no-select p-button-outlined p-button-raised " @click="this.addSymbol('B')" />
+          <PrimeButton label="C" class="p-2 pr-4 pl-4 rounded-lg border w-full border-gray-200 no-select p-button-outlined p-button-raised" @click="this.addSymbol('C')" />
+          <PrimeButton label="D" class="p-2 pr-4 pl-4 rounded-lg border w-full border-gray-200 no-select p-button-outlined p-button-raised " @click="this.addSymbol('D')" />
+          <PrimeButton label="¬" class="p-2 pr-4 pl-4 rounded-lg border w-full border-gray-200 no-select p-button-outlined p-button-raised " @click="this.addSymbol('¬')" />
+          <PrimeButton label="∧" class="p-2 pr-4 pl-4 rounded-lg border w-full border-gray-200 no-select p-button-outlined p-button-raised " @click="this.addSymbol('∧')" />
+          <PrimeButton label="∨" class="p-2 pr-4 pl-4 rounded-lg border w-full border-gray-200 no-select p-button-outlined p-button-raised " @click="this.addSymbol('∨')" />
+          <PrimeButton label="⇒" class="p-2 pr-4 pl-4 rounded-lg border w-full border-gray-200 no-select p-button-outlined p-button-raised " @click="this.addSymbol('⇒')" />
+          <PrimeButton label="⇔" class="p-2 pr-4 pl-4 rounded-lg border w-full border-gray-200 no-select p-button-outlined p-button-raised " @click="this.addSymbol('⇔')" />
+          <PrimeButton label="(" class="p-2 pr-4 pl-4 rounded-lg border w-full border-gray-200 no-select p-button-outlined p-button-raised" @click="this.addSymbol('(')" />
+          <PrimeButton label=")" class="p-2 pr-4 pl-4 rounded-lg border w-full border-gray-200 no-select p-button-outlined p-button-raised" @click="this.addSymbol(')')" />
+          <PrimeButton label="⊤" class="p-2 pr-4 pl-4 rounded-lg border w-full border-gray-200 no-select p-button-outlined p-button-raised" @click="this.addSymbol('⊤')" />
+          <PrimeButton label="⊥" class="p-2 pr-4 pl-4 rounded-lg border w-full border-gray-200 no-select p-button-outlined p-button-raised" @click="this.addSymbol('⊥')" />
+          <PrimeButton id="deleteBtn" icon="pi pi-delete-left" class="p-2 pr-4 pl-4 rounded-lg border w-full border-gray-200 no-select p-button-raised p-button-warning"
             @click="this.removeLastSymbol()" />
-          <PrimeButton icon="pi pi-trash" class="p-button-danger p-button-raised" @click="toggleOverlay" />
+          <PrimeButton icon="pi pi-trash" class="p-2 pr-4 pl-4 rounded-lg border w-full border-gray-200 no-select  p-button-danger p-button-raised" @click="toggleOverlay" />
         </div>
         <div>
           <OverlayPanel ref="op" :dismissable="true" appendTo="body" :showCloseIcon="false" id="overlay_panel">
-            <PrimeButton icon="pi pi-trash" class="p-button-danger p-button-raised" @click="this.removeAllSymbols()" />
+            <PrimeButton icon="pi pi-trash" class="p-2 pr-4 pl-4 rounded-lg border w-full border-gray-200 no-select p-button-danger p-button-raised" @click="this.removeAllSymbols()" />
           </OverlayPanel>
         </div>
       </div>
@@ -107,7 +106,7 @@ export default {
       if (inputCommand === "") {
         return []
       }
-
+//p-2 pr-4 pl-4 rounded-lg border w-full border-gray-200 no-select p-button-outlined p-button-raised
       let matches = 0
 
       return commandList.filter(command => {
@@ -512,14 +511,6 @@ export default {
       }
     },
   },
-  computed: {
-    commonButtonStyle() {
-      return "py-2.5 px-5 me-2 mb-2 text-sm font-medium text-gray-900 focus:outline-none " +
-        "bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 " +
-        "focus:z-10 focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 dark:bg-gray-800 " +
-        "dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700";
-    }
-  },
   watch: {
     msg(inputChange) {
       this.$emit('inputChange', inputChange);
@@ -529,7 +520,7 @@ export default {
 </script>
 
 
-<style>
+<style scoped>
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -564,12 +555,32 @@ export default {
 .p-buttonset.p-button-warning>.p-button,
 .p-splitbutton.p-button-warning>.p-button {
   border: 1px solid #b98607;
+  color: #b98607;
 }
 
 .p-button.p-button-danger,
 .p-buttonset.p-button-danger>.p-button,
 .p-splitbutton.p-button-danger>.p-button {
   border: 1px solid #a60606;
+  color: #a60606;
+}
+
+.p-inputgroup-addon:first-child, .p-inputgroup button:first-child, .p-inputgroup input:first-child, .p-inputgroup > .p-inputwrapper:first-child, .p-inputgroup > .p-inputwrapper:first-child > .p-inputtext {
+	border-top-left-radius: 0.5rem;
+	border-bottom-left-radius: 0.5rem;
+}
+
+.p-inputgroup-addon:last-child, .p-inputgroup button:last-child, .p-inputgroup input:last-child, .p-inputgroup > .p-inputwrapper:last-child, .p-inputgroup > .p-inputwrapper:last-child > .p-inputtext {
+	border-top-right-radius:  0.5rem;
+	border-bottom-right-radius:  0.5rem;
+}
+
+.p-button.p-button-info, .p-buttonset.p-button-info > .p-button, .p-splitbutton.p-button-info > .p-button {
+	color: #027abc;
+}
+
+.p-button.p-button-success, .p-buttonset.p-button-success > .p-button, .p-splitbutton.p-button-success > .p-button {
+	color: #689F38;
 }
 
 .clipboard {
@@ -579,9 +590,5 @@ export default {
   margin-top: 4px;
   margin-left: 4px;
   border-radius: 25px !important;
-}
-
-#deleteBtn {
-  color: #fff;
 }
 </style>

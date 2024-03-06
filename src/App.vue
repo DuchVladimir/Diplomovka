@@ -18,19 +18,19 @@
     <div class="input mb-3 h-30">
       <InputDiv v-on:cnfFormula="showCnf" v-on:inputChange="handleInputChange" />
       <div class="flex pt-2">
-        <PrimeButton label="Export cnf as DIMACS" class="p-button-outlined p-button-raised w-full pt-3 pb-3 md:me-1"
+        <PrimeButton label="Export cnf as DIMACS" class="p-2 pr-4 pl-4 rounded-lg border w-full border-gray-200 no-select p-button-outlined p-button-raised md:me-1"
           @click="downloadDimacs" />
-        <PrimeButton label="Import cnf from DIMACS" class="p-button-outlined p-button-raised w-full pt-3 pb-3"
+        <PrimeButton label="Import cnf from DIMACS" class="p-2 pr-4 pl-4 rounded-lg border w-full border-gray-200 no-select p-button-outlined p-button-raised"
           @click="triggerFileInput" />
         <input type="file" ref="fileInput" @change="handleFileUpload" accept=".txt" style="display: none;">
       </div>
       <div class="flex pt-2">
         <PrimeButton :label="buttonLabels.CopyInputAsLatexLabel.value" :class="{
         'border-green-700 text-green-700 important-hover': !buttonLabels.CopyInputAsLatexLabel.isDefault
-      }" class="p-button-outlined p-button-raised w-full pt-3 pb-3 md:me-1" @click="clipboardInputLatex(inputText)" />
+      }" class="p-2 pr-4 pl-4 rounded-lg border w-full border-gray-200 no-select p-button-outlined p-button-raised md:me-1" @click="clipboardInputLatex(inputText)" />
         <PrimeButton :label="buttonLabels.CopyCnfAsLatexLabel.value" :class="{
         'border-green-700 text-green-700 important-hover': !buttonLabels.CopyCnfAsLatexLabel.isDefault
-      }" class="p-button-outlined p-button-raised w-full pt-3 pb-3"
+      }" class="p-2 pr-4 pl-4 rounded-lg border w-full border-gray-200 no-select p-button-outlined p-button-raised"
           @click="clipboardCnfLatex(cnfTextRepresentation)" />
       </div>
     </div>
@@ -41,13 +41,20 @@
       <hr class="mt-6">
     </div>
 
+    <div class="flex pt-8 w-full">
+      <PrimeButton label="Interactive resolution method" :class="{ 'button-active': resolutionState == 'manual' }"
+        class="p-2 pr-4 pl-4 rounded-lg border w-full border-gray-200 no-select p-button-outlined p-button-raised md:me-1" @click="showManualResolution" />
+      <PrimeButton label="Automatic resolution method result" :class="{ 'button-active': resolutionState == 'auto' }"
+        class="p-2 pr-4 pl-4 rounded-lg border w-full border-gray-200 no-select p-button-outlined p-button-raised" @click="showAutoResolution" />
+    </div>
     <div class="flex pt-2 w-full">
       <PrimeButton label="Show tree" :class="{ 'button-active': showTree }"
-        class="p-button-outlined p-button-raised w-full pt-3 pb-3 md:me-1" @click="() => { showTree = !showTree }" />
+        class="p-2 pr-4 pl-4 rounded-lg border w-full border-gray-200 no-select p-button-outlined p-button-raised md:me-1" @click="() => { showTree = !showTree }" />
       <PrimeButton label="Show List" :class="{ 'button-active': showList }"
-        class="p-button-outlined p-button-raised w-full pt-3 pb-3 md:me-1" @click="() => { showList = !showList }" />
+        class="p-2 pr-4 pl-4 rounded-lg border w-full border-gray-200 no-select p-button-outlined p-button-raised md:me-1" :disabled="resolutionState == 'manual'"
+        @click="() => { showList = !showList }" />
       <PrimeButton label="Show table" :class="{ 'button-active': showTable }"
-        class="p-button-outlined p-button-raised w-full pt-3 pb-3" @click="() => { showTable = !showTable }" />
+        class="p-2 pr-4 pl-4 rounded-lg border w-full border-gray-200 no-select p-button-outlined p-button-raised" @click="() => { showTable = !showTable }" />
     </div>
 
     <div class="mb-4 mt-8" v-if="(showList || showTree) && cnf != null">
@@ -75,11 +82,23 @@
 
     <div class="input mb-3 mt-4 h-30 w-full" v-if="showList">
       <ul class="flex flex-wrap items-center justify-center text-gray-900 dark:text-white space-y-2">
+        <li v-for="(variable, index) in allVariablesList" :key="index" class="mt-2">
+          <PrimeButton class=" md:me-2 p-2 pr-4 pl-4 rounded-lg border border-gray-200 no-select p-button-outlined p-button-raised"
+             @click="markClause(clause)">
+            {{ variable }}
+          </PrimeButton>
+        </li>
+      </ul>
+      <div class="w-full items-center justify-center mx-auto text-center"
+        v-if="resolutionState == 'manual' && userResolutionCnf.length > 0">Click on
+        clause to choose it for resolution</div>
+      <ul class="flex flex-wrap items-center justify-center text-gray-900 dark:text-white space-y-2">
         <li v-for="(clause, index) in resolutionCnf" :key="index" class="mt-2">
-          <p class="md:me-2 p-2 pr-4 pl-4 rounded-lg border border-gray-200 no-select"
-            :style="{ backgroundColor: (index === resolutionCnf.length - 1 && !clause.isRoot) ? 'rgb(247, 204, 196)' : (clause.isRoot ? 'rgb(224, 227, 231)' : 'rgb(247, 246, 196)') }">
+          <button class="md:me-2 p-2 pr-4 pl-4 rounded-lg border border-gray-200 no-select"
+            :disabled="resolutionState !== 'manual'" @click="markClause(clause)"
+            :style="{ backgroundColor: isClauseSelected(clause) ? 'rgb(153, 187, 240)' : ((index === resolutionCnf.length - 1 && !clause.isRoot) ? 'rgb(247, 204, 196)' : (clause.isRoot ? 'rgb(224, 227, 231)' : 'rgb(247, 246, 196)')) }">
             {{ formatClause(clause) }}
-          </p>
+          </button>
         </li>
       </ul>
     </div>
@@ -89,7 +108,7 @@
     </div>
 
     <div class="input mb-3 mt-16 h-30 w-full" v-if="showTable">
-      <CnfTable :treeData="resolutionCnf" />
+      <CnfTable @mark-clause="markClause" :treeData="resolutionCnf" />
     </div>
 
 
@@ -107,7 +126,7 @@ import TextField from "./components/TextField.vue";
 import CnfTable from "./components/CnfTable.vue";
 import { convertCnfObjectToCnfString } from "./methods/CnfConvertor";
 import { convertObjectToDimas, downloadDimacs } from "./methods/DimacsService";
-import { applyResolutionLogic } from "./methods/ResolutionLogicService";
+import { applyResolutionLogic, resolveLogicalVariables } from "./methods/ResolutionLogicService";
 import replacementArray from './assets/data/latexReplacments.json';
 
 export default {
@@ -122,11 +141,17 @@ export default {
       display: false,
       cnfTextRepresentation: "",
       resolutionCnfTextRepresentation: "",
+      originalResolutionCnfTextRepresentation: "",
       cnf: null,
-      resolutionCnf: null,
+      resolutionCnf: [],
+      originalResolutionCnf: [],
+      userResolutionCnf: [],
+      allVariablesList: [],
       dimacsString: "",
       textareaClipboard: false,
       resolutionTextareaClipboard: false,
+      resolutionState: 'manual',
+      selectedClauses: [],
       inputText: "",
       showTree: false,
       showTable: false,
@@ -144,18 +169,51 @@ export default {
     };
   },
 
+  computed: {
+    isClauseSelected() {
+      return clause => this.selectedClauses.some(selected => selected.index === clause.index);
+    }
+  },
+
   methods: {
+    showManualResolution() {
+      this.resolutionState = 'manual';
+      this.showList = true;
+      this.resolutionCnf = JSON.parse(JSON.stringify(this.userResolutionCnf));
+      this.resolutionCnfTextRepresentation = convertCnfObjectToCnfString(this.userResolutionCnf);
+    },
+    showAutoResolution() {
+      this.resolutionState = 'auto';
+      this.selectedClauses = [];
+      this.resolutionCnf = JSON.parse(JSON.stringify(this.originalResolutionCnf));
+      this.resolutionCnfTextRepresentation = this.originalResolutionCnfTextRepresentation;
+    },
     showCnf(cnfFormula) {
       this.cnf = cnfFormula
       this.cnfTextRepresentation = convertCnfObjectToCnfString(this.cnf);
       this.dimacsString = convertObjectToDimas(this.cnf)
+      this.allVariablesList = this.getAllVariableList();
+      console.log("list of vars: ",this.allVariablesList);
 
+      this.userResolutionCnf = JSON.parse(JSON.stringify(this.cnf))
       this.resolutionCnf = JSON.parse(JSON.stringify(this.cnf))
-      applyResolutionLogic(this.resolutionCnf)
-      this.resolutionCnfTextRepresentation = convertCnfObjectToCnfString(this.resolutionCnf);
+      this.originalResolutionCnf = JSON.parse(JSON.stringify(this.cnf))
+      applyResolutionLogic(this.originalResolutionCnf)
+      this.resolutionCnfTextRepresentation = convertCnfObjectToCnfString(this.userResolutionCnf);
+      this.originalResolutionCnfTextRepresentation = convertCnfObjectToCnfString(this.originalResolutionCnf);
 
       // updateTree(this.resolutionCnfTextRepresentation);
       console.log(this.cnf);
+    },
+
+    getAllVariableList() {
+      const allVariablesSet = new Set();
+      this.cnf.forEach(item => {
+        item.variables.forEach(variable => {
+          allVariablesSet.add(variable.variable);
+        });
+      });
+      return Array.from(allVariablesSet);
     },
 
     copyToClipboard(text) {
@@ -169,6 +227,30 @@ export default {
       return
     },
 
+    markClause(clause) {
+      if (this.selectedClauses.length === 2) {
+        return;
+      }
+      const existingIndex = this.selectedClauses.findIndex(selectedClause => selectedClause.index === clause.index);
+      if (existingIndex === -1) {
+        this.selectedClauses.push(clause);
+      } else {
+        this.selectedClauses.splice(existingIndex, 1);
+      }
+
+      if (this.selectedClauses.length === 2) {
+        this.chceckGivenClases([...this.selectedClauses]);
+        setTimeout(() => { this.selectedClauses = []; }, 500);
+      }
+    },
+
+    chceckGivenClases(clauseArray) {
+      let resultClause = resolveLogicalVariables(this.userResolutionCnf, clauseArray[0], clauseArray[1]);
+      if (resultClause != null) {
+        this.userResolutionCnf.push(resultClause);
+        this.resolutionCnf.push(resultClause);
+      }
+    },
 
     resolutionCopyToClipboard(text) {
       if (navigator.clipboard && text.length > 0 && !this.resolutionTextareaClipboard) {
@@ -308,7 +390,7 @@ export default {
 
 .cnf-text {
   width: 600px;
-  background-color: rgb(83, 83, 83);
+  background-color: rgb(153, 187, 240);
 }
 
 .button-active {
