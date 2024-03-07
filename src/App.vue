@@ -105,14 +105,13 @@
         </li>
       </ul>
 
-      <div class="w-full items-center justify-center mx-auto text-center mt-8"
-        v-if="resolutionState == 'manual' && userResolutionCnf.length > 0">Click on
-        clause to choose it for resolution</div>
+      <div class="w-full items-center justify-center mx-auto text-center whitespace-pre-line mt-8"
+        v-if="resolutionState == 'manual' && userResolutionCnf.length > 0">{{ resolveMessage }}</div>
       <ul class="flex flex-wrap items-center justify-center text-gray-900 dark:text-white space-y-2">
         <li v-for="(clause, index) in resolutionListCnf" :key="index" class="mt-2">
           <button class="md:me-2 p-2 pr-4 pl-4 rounded-lg border border-gray-200 no-select"
             :disabled="resolutionState !== 'manual'" @click="markClause(clause)"
-            :style="{ backgroundColor: isClauseSelected(clause) ? 'rgb(153, 187, 240)' : ((clause.index === userResolutionCnf[userResolutionCnf.length - 1].index && !clause.isRoot) ? 'rgb(247, 204, 196)' : (clause.isRoot ? 'rgb(224, 227, 231)' : 'rgb(247, 246, 196)')) }">
+            :style="{ backgroundColor: isClauseSelected(clause) ? 'rgb(153, 187, 240)' : ((clause.index === (resolutionState == 'manual' ? userResolutionCnf[userResolutionCnf.length - 1].index : originalResolutionCnf[originalResolutionCnf.length - 1].index) && !clause.isRoot) ? 'rgb(247, 204, 196)' : (clause.isRoot ? 'rgb(224, 227, 231)' : 'rgb(247, 246, 196)')) }">
             {{ formatClause(clause) }}
           </button>
         </li>
@@ -159,6 +158,7 @@ export default {
       resolutionCnfTextRepresentation: "",
       originalResolutionCnfTextRepresentation: "",
       cnf: null,
+      resolveMessage: "Click on clause to choose it for resolution",
       resolutionCnf: [],
       resolutionListCnf: [],
       originalResolutionCnf: [],
@@ -207,6 +207,7 @@ export default {
       this.originalResolutionCnf = JSON.parse(JSON.stringify(this.cnf))
 
       applyResolutionLogic(this.originalResolutionCnf)
+      console.log(this.originalResolutionCn);
       this.resolutionCnfTextRepresentation = convertCnfObjectToCnfString(this.userResolutionCnf);
       this.originalResolutionCnfTextRepresentation = convertCnfObjectToCnfString(this.originalResolutionCnf);
 
@@ -216,6 +217,7 @@ export default {
         this.resolutionCnf = JSON.parse(JSON.stringify(this.cnf))
       }
       this.resolutionListCnf = this.filterByToggleList(JSON.parse(JSON.stringify(this.resolutionCnf)));
+      this.resolveMessage= "Click on clause to choose it for resolution"
       console.log(this.cnf);
     },
 
@@ -300,14 +302,24 @@ export default {
     },
 
     chceckGivenClases(clauseArray) {
-      let resultClause = resolveLogicalVariables(this.userResolutionCnf, clauseArray[0], clauseArray[1]);
+      let resolveResult = resolveLogicalVariables(this.userResolutionCnf, clauseArray[0], clauseArray[1])
+      let resultClause = resolveResult.data;
+      this.resolveMessage = formatMessageArray(resolveResult.message);
       if (resultClause != null) {
         this.userResolutionCnf.push(resultClause);
-        this.resolutionCnf.push(resultClause);
+        this.resolutionCnf = [...this.resolutionCnf, resultClause];
         this.resolutionListCnf = this.filterByToggleList(JSON.parse(JSON.stringify(this.resolutionCnf)));
-        if (!this.resolutionListCnf.includes(resultClause)) {
+        if (!this.resolutionListCnf.some(clause => clause.index === resultClause.index)) {
           this.resolutionListCnf.push(resultClause);
         }
+      }
+
+      function formatMessageArray(array){
+        let message = ""
+        array.forEach(element => {
+          message += element +'\n'
+        });
+        return message
       }
     },
 

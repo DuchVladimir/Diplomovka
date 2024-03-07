@@ -15,22 +15,17 @@ function resolveLogic(variables) {
       j++
     ) {
       let currentSet2 = variables[j];
-      let newVariables = compareVariables(
-        currentSet1,
-        currentSet2,
-        variables.length
-      );
+      let result = compareVariables(currentSet1, currentSet2, variables.length);
+      let newVariables = result.data;
 
       if (newVariables.length > 0) {
         newVariables.forEach((obj) => {
           if (!objectExists(variables, obj)) {
-            if (obj.variables.length == 0) {
-              variables.push(createAbsordumVariable(obj.index, obj.parents));
+            variables.push(obj);
+            if (obj.variables.length == 1 && obj.variables[0].variable == constants.FALSE_CHAR) {
               nullFound = true;
               return;
-            } else {
-              variables.push(obj);
-            }
+            } 
           }
         });
       }
@@ -42,25 +37,27 @@ function resolveLogic(variables) {
 }
 
 export function resolveLogicalVariables(variables, variable1, variable2) {
-  let newVariables = compareVariables(
-    variable1,
-    variable2,
-    variables.length
-  );
+  let result = compareVariables(variable1, variable2, variables.length);
+  let newVariables = result.data;
+  let message = result.message;
+  
   let obj = newVariables[0];
   if (newVariables.length > 0) {
     if (!objectExists(variables, obj)) {
-      if (obj.variables.length == 0) {
-        return createAbsordumVariable(obj.index, obj.parents);
-      } else {
-        return obj;
-      }
+      console.log(message);
+        return {data: obj, message: message};
+    } else {
+      message = [(
+        "Created clause " +
+        createString(obj.variables) +
+        " already exists.")]
     }
   }
-  return null;
+  return {data: null, message: message};
 }
 
 function compareVariables(variableObject1, variableObject2, length) {
+  let message = [];
   let index = length;
   let variable1 = variableObject1.variables;
   let variable2 = variableObject2.variables;
@@ -78,15 +75,6 @@ function compareVariables(variableObject1, variableObject2, length) {
         copiedObject1.variables.splice(i, 1);
         copiedObject2.variables.splice(j, 1);
 
-        // console.log(createString(variable1), "   ", createString(variable2));
-        // console.log(
-        //   element1.isNeg ? "¬" : " ",
-        //   JSON.stringify(element1.variable),
-        //   "==",
-        //   element2.isNeg ? "¬" : " ",
-        //   JSON.stringify(element2.variable)
-        // );
-        // console.log("-------------------------------------------------------");
         let newObject = createnewObject(
           [...copiedObject1.variables, ...copiedObject2.variables],
           false,
@@ -95,12 +83,48 @@ function compareVariables(variableObject1, variableObject2, length) {
         );
         index++;
         if (newObject != null) {
-          result.push(newObject);
+          if (newObject.variables.length == 0) {
+            result.push( createAbsordumVariable(newObject.index, newObject.parents));
+            message.push(
+              "Resolution method completed - " +
+              createString(result[0].variables) +
+              " found.");
+          } else {
+            result.push(newObject);
+            message.push(
+              "Adding result " +
+              createString(result[0].variables) +
+              " from " +
+              createString(variable1) +
+              " and " +
+              createString(variable2) +
+              ".");
+          }
+        } else {
+          message.push(
+            "Ignoring (true) result from " +
+            createString([
+              ...copiedObject1.variables,
+              ...copiedObject2.variables,
+            ]) +
+            " - created from " +
+            createString(variable1) +
+            " and " +
+            createString(variable2) +
+            ".");
         }
       }
     }
   }
-  return result;
+  if (message == null && result.length == 0) {
+    message.push(
+      "Nothing to add from " +
+      createString(variable1) +
+      " and " +
+      createString(variable2) +
+      ".");
+  }
+  return { data: result, message: message };
 }
 
 function createString(variable) {

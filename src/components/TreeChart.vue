@@ -5,14 +5,14 @@
                 <h4 class="text-center mt-4">{{ value }} out of {{ maxSliderValue }} clauses</h4>
             </div>
             <div class="p-inputgroup w-full items-center justify-center mx-auto text-lg font-bold">
-                <PrimeButton label="<<" class="p-button-outlined p-button-raised "
+                <PrimeButton label="<<" class="md:me-2 p-2 pr-4 pl-4 rounded-lg border border-gray-200 no-select p-button-outlined p-button-raised "
                     @click="() => { spinnerValue = 0 }" />
-                <PrimeButton label="<" class="p-button-outlined p-button-raised" @click="removeLastClause" />
+                <PrimeButton label="<" class="md:me-2 p-2 pr-4 pl-4 rounded-lg border border-gray-200 no-select p-button-outlined p-button-raised" @click="removeLastClause" />
                 <div class="slider-div">
                     <Slider v-model="spinnerValue" :step="1" :max="maxSliderValue" class="slider w-14rem w-full" />
                 </div>
-                <PrimeButton label=">" class="p-button-outlined p-button-raised " @click="addLastClause" />
-                <PrimeButton label=">>" class="p-button-outlined p-button-raised "
+                <PrimeButton label=">" class="md:me-2 p-2 pr-4 pl-4 rounded-lg border border-gray-200 no-select p-button-outlined p-button-raised " @click="addLastClause" />
+                <PrimeButton label=">>" class="md:me-2 p-2 pr-4 pl-4 rounded-lg border border-gray-200 no-select p-button-outlined p-button-raised "
                     @click="() => { spinnerValue = maxSliderValue }" />
             </div>
         </div>
@@ -338,6 +338,7 @@ export default {
         }
     }
 };
+//(A∨B)∧(¬A∨B)∧A∧¬B
 </script>
 
 <style>
@@ -346,26 +347,30 @@ export default {
     width: 40%;
     margin: 0 10px;
     padding: 0 0px;
+
+    border: 1px transparent ;
+    border-color: rgb(229 231 235 / var(--tw-border-opacity));
+    box-shadow: 0 3px 1px -2px rgba(0, 0, 0, 0.2), 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12);
 }
 
 .slider {
-    padding: 21px;
+    padding: 23px;
     background-color: white;
 }
 
 .p-slider .p-slider-handle {
-    height: 3rem;
+    height: 3.4rem;
     width: 1.2rem;
     background: #ffffff;
-    border: 2px solid #2196F3;
+    border: 2px solid #2c9efc;
     border-radius: 10px;
     transition: background-color 0.2s, color 0.2s, border-color 0.2s, box-shadow 0.2s;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.25);
+    box-shadow: 0 3px 1px -2px rgba(0, 0, 0, 0.2), 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12);
 
 }
 
 .p-slider.p-slider-horizontal .p-slider-handle {
-    margin-top: -1.5rem;
+    margin-top: -1.7rem;
     margin-left: -0.6rem;
 }
 
@@ -377,6 +382,33 @@ export default {
 .p-slider .p-slider-range {
     box-shadow: inset 1px 2px 8px rgba(0, 0, 0, 0.25);
     background: #b5deff;
+}
+
+.p-button.p-button-raised {
+	box-shadow: 0 3px 1px -2px rgba(0, 0, 0, 0.2), 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12) !important;
+}
+
+.p-button.p-button-outlined {
+	background-color: transparent;
+	color: #2196F3 ;
+	border: 1px solid ;
+    border-color: rgb(229 231 235 / var(--tw-border-opacity));
+}
+
+.border-gray-200[data-v-79e85c19] {
+	--tw-border-opacity: 1;
+	border-color: rgb(229 231 235 / var(--tw-border-opacity));
+    border-radius: 0.5rem;
+}
+
+.p-inputgroup-addon:last-child, .p-inputgroup button:last-child, .p-inputgroup input:last-child, .p-inputgroup > .p-inputwrapper:last-child, .p-inputgroup > .p-inputwrapper:last-child > .p-inputtext {
+	border-top-right-radius: 0.5rem;
+	border-bottom-right-radius: 0.5rem;
+}
+
+.p-inputgroup-addon:first-child, .p-inputgroup button:first-child, .p-inputgroup input:first-child, .p-inputgroup > .p-inputwrapper:first-child, .p-inputgroup > .p-inputwrapper:first-child > .p-inputtext {
+	border-top-left-radius: 0.5rem;
+	border-bottom-left-radius: 0.5rem;
 }
 
 .columnChart {
