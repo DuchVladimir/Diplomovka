@@ -64,7 +64,8 @@
         @click="() => { showTable = !showTable }" />
     </div>
 
-    <div class="mb-4 mt-8" v-if="(showList || showTree) && cnf != null">
+    <div class="mb-4 mt-8"
+      v-if="(showList || showTree) && cnf && !(cnf[0].variables[0].variable == '⊤' || cnf[0].variables[0].variable == '⊥')">
       <ul class="flex flex-wrap items-center justify-center text-gray-900 dark:text-white space-y-2">
         <li class="mt-2">
           <p class="md:me-2 p-2 pr-4 font-bold pl-4 rounded-lg border border-gray-200 no-select"
@@ -87,10 +88,11 @@
       </ul>
     </div>
 
-    <div class="input mb-3 mt-4 h-30 w-full" v-if="showList">
-      <div class="w-full items-center justify-center mx-auto text-center"
-        v-if="resolutionState == 'manual' && userResolutionCnf.length > 0">Filter</div>
-      <ul class="flex flex-wrap items-center justify-center text-gray-900 dark:text-white space-y-2">
+    <div class="input mb-3 mt-4 h-30 w-full"
+      v-if="showList && cnf && !(cnf[0].variables[0].variable == '⊤' || cnf[0].variables[0].variable == '⊥')">
+      <div class="w-full items-center justify-center mx-auto text-center text-l font-bold"
+        v-if="resolutionListCnf.length > 0">Filter</div>
+      <ul class="flex flex-wrap items-center justify-center text-gray-900 dark:text-white space-y-2 mb-8">
         <li v-for="(variable, index) in allVariablesList" :key="index" class="mt-2">
           <PrimeButton
             class=" md:me-2 p-2 pr-4 pl-4 rounded-lg border border-gray-200 no-select p-button-outlined p-button-raised"
@@ -105,7 +107,7 @@
         </li>
       </ul>
 
-      <div class="w-full items-center justify-center mx-auto text-center whitespace-pre-line mt-8"
+      <div class="w-full items-center justify-center mx-auto text-center whitespace-pre-line text-l font-bold"
         v-if="resolutionState == 'manual' && userResolutionCnf.length > 0">{{ resolveMessage }}</div>
       <ul class="flex flex-wrap items-center justify-center text-gray-900 dark:text-white space-y-2">
         <li v-for="(clause, index) in resolutionListCnf" :key="index" class="mt-2">
@@ -122,7 +124,7 @@
       <TreeChart :treeData="resolutionCnf" :showTree="showTree" />
     </div>
 
-    <div class="input mb-3 mt-16 h-30 w-full" v-if="showTable">
+    <div class="input mb-3 mt-16 h-30 w-full" v-if="showTable && resolutionCnf.length > 0">
       <CnfTable @mark-clause="markClause" :treeData="resolutionCnf" />
     </div>
 
@@ -195,7 +197,7 @@ export default {
   },
 
   methods: {
-
+    //(A∧¬C)∨(¬A∧C)∨A - ERROR - distributiveRule calling only once creating ((A∧¬C)∨A∨C) which works as new input
     showCnf(cnfFormula) {
       this.cnf = cnfFormula
       this.cnfTextRepresentation = convertCnfObjectToCnfString(this.cnf);
@@ -217,7 +219,7 @@ export default {
         this.resolutionCnf = JSON.parse(JSON.stringify(this.cnf))
       }
       this.resolutionListCnf = this.filterByToggleList(JSON.parse(JSON.stringify(this.resolutionCnf)));
-      this.resolveMessage= "Click on clause to choose it for resolution"
+      this.resolveMessage = "Click on clause to choose it for resolution"
       console.log(this.cnf);
     },
 
@@ -314,10 +316,10 @@ export default {
         }
       }
 
-      function formatMessageArray(array){
+      function formatMessageArray(array) {
         let message = ""
         array.forEach(element => {
-          message += element +'\n'
+          message += element + '\n'
         });
         return message
       }

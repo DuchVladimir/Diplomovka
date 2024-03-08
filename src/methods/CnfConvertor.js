@@ -1,3 +1,5 @@
+import * as constants from "./../assets/data/constants";
+
 /* eslint-disable prettier/prettier */
 export function createFormula(input) {
   let index = 1;
@@ -582,40 +584,54 @@ export function sortVariables(rootClause) {
 }
 //¬(((¬D ⇒ ¬C) ⇔ (E ⇒ D)) ∧ ¬((C ⇒ ¬D) ∨ (C ∨ ¬D))) ⇔ ¬((¬(C ∨ C) ∧ (E ∧ D)) ∧ ¬((¬A ∧ C) ⇒ ¬(¬D ∧ E)))
 export function convertObjectToFinalArray(obj) {
+  console.log(obj);
   let clausesArray = [];
   let index = 0;
   try {
-    obj.variable.forEach((element) => {
-      let variableArray = {
-        variables:[],
-        isRoot: true,
-        index: 0,
-        parents: []
-      };
-      try {
-        element.variable.forEach((element) => {
-          variableArray.variables.push({
-            variable: element.variable,
-            isNeg: element.isNeg,
-          });
-        });
-      } catch (error) {
+    if (obj.operands.length > 0 && obj.operands[0] == constants.OR_OPERAND) {
+      convertElement(obj);
+    } else {
+      obj.variable.forEach((element) => {
+        convertElement(element);
+      });
+    }
+  } catch (error) {
+    clausesArray.push({
+      variables: [{ variable: obj.variable, isNeg: obj.isNeg }],
+      isRoot: true,
+      index: index,
+      parents: [],
+    });
+    index++;
+  }
+  console.log("FinalArray", clausesArray);
+  return clausesArray;
+
+  function convertElement(element) {
+    let variableArray = {
+      variables: [],
+      isRoot: true,
+      index: 0,
+      parents: [],
+    };
+    try {
+      element.variable.forEach((element) => {
         variableArray.variables.push({
           variable: element.variable,
           isNeg: element.isNeg,
         });
-      }
-      variableArray.isRoot = true;
-      variableArray.index = index;
-      index++;
-      clausesArray.push(variableArray);
-    });
-  } catch (error) {
-    clausesArray.push({ variables: [{ variable: obj.variable, isNeg: obj.isNeg }], isRoot: true, index: index});
+      });
+    } catch (error) {
+      variableArray.variables.push({
+        variable: element.variable,
+        isNeg: element.isNeg,
+      });
+    }
+    variableArray.isRoot = true;
+    variableArray.index = index;
     index++;
+    clausesArray.push(variableArray);
   }
-  console.log("FinalArray",clausesArray)
-  return clausesArray;
 }
 
 function removeDuplicateObjects(rootClause) {

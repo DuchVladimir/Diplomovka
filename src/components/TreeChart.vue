@@ -160,7 +160,7 @@ export default {
             }
             for (let i = treeArray.length; i < this.allPoints.length; i++) {
                 treeArray.push(JSON.parse(JSON.stringify(this.allPoints[i])));
-                if (hasParent(this.allPoints[i + 1].parent) && !isPresentInTree(this.allPoints[i + 1].id)) {
+                if (this.allPoints[i + 1] && hasParent(this.allPoints[i + 1].parent) && !isPresentInTree(this.allPoints[i + 1].id)) {
                     treeArray.push(JSON.parse(JSON.stringify(this.allPoints[i + 1])));
                     treeArray[treeArray.length - 1].color = 'rgb(247, 204, 196)';
                     break;

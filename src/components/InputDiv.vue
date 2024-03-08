@@ -14,7 +14,7 @@
           <textarea wrap="soft" rows="4" class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg 
               border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 
               dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-            placeholder="Type here..." type="text" v-model="msg" ref="input" @keydown.down="handleArrowDown($event)"
+            placeholder='Type here...&#10;Example with input variants: ¬(((!E ⇔ ∼E) <=> (E or ¬G)) ⇒ (¬(neg A ∨ NEG B) || (¬C ⇔ B))) AND (((¬A <-> ¬C) /\ ¬(¬C ∨ ¬A)) & ¬(¬(D \/ ¬D) ∧ (D impl ¬C)))&#10;You can submit empty input to test this clause.' type="text" v-model="msg" ref="input" @keydown.down="handleArrowDown($event)"
             @keydown.up="handleArrowUp($event)" @keydown.tab.prevent="handleTab"
             @keydown.enter="selectCommandWithEnter($event)"></textarea>
 
@@ -106,7 +106,7 @@ export default {
       if (inputCommand === "") {
         return []
       }
-//p-2 pr-4 pl-4 rounded-lg border w-full border-gray-200 no-select p-button-outlined p-button-raised
+
       let matches = 0
 
       return commandList.filter(command => {
@@ -163,8 +163,6 @@ export default {
         return lastIndex;
       }
     }
-
-
 
     function replaceSubstringAfterLastSlash(inputRef, replacement) {
       const inputString = inputRef.value;
@@ -270,9 +268,11 @@ export default {
       this.replacementArray.forEach(item => {
         inputString = inputString.split(item.text).join(item.value);
       });
-      return inputString;
+      return inputString.replace(/\s/g, "").replace(/¬¬/g, "");
     },
     convertToCNF(expression) {
+      console.log("input expression: " + expression);
+      
       let rootClause = createFormula(expression);
       console.log("createFormula", formulaLog(rootClause));
 
@@ -310,7 +310,6 @@ export default {
 
       this.$refs.input.focus();
     },
-
     removeLastSymbol() {
       let inputRef = this.$refs.input,
         startPos = inputRef.selectionStart,
@@ -334,18 +333,16 @@ export default {
 
       this.$refs.input.focus();
     },
-
     removeAllSymbols() {
       this.msg = "";
       this.$refs.op.hide();
       this.$refs.input.focus();
     },
-
     toggleOverlay(event) {
       this.$refs.op.toggle(event);
     },
-
     sendMsg() {
+      if(this.msg.length == 0) {this.msg = "¬(((¬E ⇔ ¬E) ⇔ (E ∨ ¬G)) ⇒ (¬(¬A ∨ ¬B) ∨ (¬C ⇔ B))) ∧ (((¬A ⇔ ¬C) ∧ ¬(¬C ∨ ¬A)) ∧ ¬(¬(D ∨ ¬D) ∧ (D ⇒ ¬C)))";}
       let editedExpression = "(" + this.replaceTextValues(this.msg) + ")";
       if (!this.checkMsg(editedExpression)) return false;
       let cnfFormula = this.convertToCNF(editedExpression);
@@ -356,6 +353,7 @@ export default {
     },
 
     checkMsg(text) {
+
       let msg = text.replace(/\s+/g, "");
       let result = true;
       let closures = 0;
@@ -490,7 +488,7 @@ export default {
       function checkNeg(letter, nextLetter) {
         return (
           letter != "¬" ||
-          (letter == "¬" && (checkCharacters(nextLetter) || nextLetter == "("))
+          (letter == "¬" && (checkCharacters(nextLetter) || nextLetter == "(" || nextLetter == "¬"))
         );
       }
 
