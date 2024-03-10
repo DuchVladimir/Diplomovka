@@ -285,14 +285,20 @@ export default {
       reduceVariables(rootClause);
       console.log("reduceVariables", formulaLog(rootClause));
 
-      distributiveRule(rootClause);
-      console.log("distributiveRule", formulaLog(rootClause));
-
       reduceVariables(rootClause);
       console.log("reduceVariables", formulaLog(rootClause));
 
+      distributiveRule(rootClause);
+      console.log("distributiveRule", formulaLog(rootClause));
+
+      // reduceVariables(rootClause);
+      // console.log("reduceVariables", formulaLog(rootClause));
+
       sortVariables(rootClause);
       console.log("sortVariables", formulaLog(rootClause));
+      
+      reduceVariables(rootClause);
+      console.log("reduceVariables", formulaLog(rootClause));
 
       return convertObjectToFinalArray(rootClause)
     },

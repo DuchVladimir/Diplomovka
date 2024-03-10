@@ -324,10 +324,13 @@ export function reduceVariables(rootClause) {
     }
   }
 
-  reduceFinalVariables(rootClause);
+  if(reduceFinalVariables(rootClause)){
+    reduceVariables(rootClause);
+  };
 }
 
 function reduceFinalVariables(rootClause) {
+  let wasReduced = false;
   rootClause.variableLength = rootClause.variable.length;
   reduceTautologyAndContradiction(0);
 
@@ -335,18 +338,21 @@ function reduceFinalVariables(rootClause) {
     for (let j = i + 1; j < rootClause.variableLength; j++) {
       let reducingResult = getReduce(i, j);
       if (reducingResult) {
+        wasReduced = true;
         i--;
         j--;
         if (rootClause.variableLength == 1) {
-          return;
+          return wasReduced;
         }
         break;
       }
     }
   }
 
+  return wasReduced;
+
   function getReduce(i, j) {
-    if (!i.hasVariables) {
+    if (!rootClause.variable[i].hasVariables) {
       return (
         reduceTautologyAndContradiction(j) || areSame(i, j) || areOpposite(i, j)
       );
@@ -494,7 +500,7 @@ export function distributiveRule(rootClause) {
         rootClause.operands = result.operands;
         rootClause.variable = result.variable;
         joinClauses(rootClause);
-        reduceVariables(rootClause);
+        // reduceVariables(rootClause); // ¬(A∧C∧(E∨¬G)∧(¬A∨¬B)∧(B∨¬C)∧(¬B∨C)∧(A∨¬C)∧(¬A∨C)) pri tomto nefunguje
         break;
       }
     }
@@ -524,7 +530,6 @@ export function distributiveRule(rootClause) {
     }
   }
   joinClauses(rootClause);
-  reduceVariables(rootClause);
   reduceVariables(rootClause);
 
   function applyDistributiveRule(index, clause, variable) {
