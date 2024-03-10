@@ -288,6 +288,9 @@ export default {
       distributiveRule(rootClause);
       console.log("distributiveRule", formulaLog(rootClause));
 
+      reduceVariables(rootClause);
+      console.log("reduceVariables", formulaLog(rootClause));
+
       sortVariables(rootClause);
       console.log("sortVariables", formulaLog(rootClause));
 

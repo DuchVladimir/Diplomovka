@@ -1,8 +1,8 @@
-const operators = ["∧", "∨", "⇒", "⇔"];
+const operators = ["∧", "∨", "=>", "<=>"];
 const variables = ["A", "B", "C", "D", "E", "G"];
 
 export function createRandomFormula() {
-  const formula = generateFormula(randomRange(1, 6));
+  const formula = generateFormula(randomRange(3, 4));
   return formula[0] === "¬"
     ? formula
     : formula.substring(1, formula.length - 1);
