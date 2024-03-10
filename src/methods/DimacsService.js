@@ -37,7 +37,6 @@ export function convertObjectToDimas(cnfFormula) {
   }
 
   export function downloadDimacs(dimacsString) {
-    console.log(dimacsString);
     if(dimacsString === undefined || dimacsString === null || dimacsString === "") return;
     const blob = new Blob([dimacsString], { type: 'text/plain' });
 

@@ -197,7 +197,6 @@ export default {
   },
 
   methods: {
-    //(A∧¬C)∨(¬A∧C)∨A - ERROR - distributiveRule calling only once creating ((A∧¬C)∨A∨C) which works as new input
     showCnf(cnfFormula) {
       this.cnf = cnfFormula
       this.cnfTextRepresentation = convertCnfObjectToCnfString(this.cnf);
@@ -209,7 +208,6 @@ export default {
       this.originalResolutionCnf = JSON.parse(JSON.stringify(this.cnf))
 
       applyResolutionLogic(this.originalResolutionCnf)
-      console.log(this.originalResolutionCn);
       this.resolutionCnfTextRepresentation = convertCnfObjectToCnfString(this.userResolutionCnf);
       this.originalResolutionCnfTextRepresentation = convertCnfObjectToCnfString(this.originalResolutionCnf);
 
@@ -220,7 +218,6 @@ export default {
       }
       this.resolutionListCnf = this.filterByToggleList(JSON.parse(JSON.stringify(this.resolutionCnf)));
       this.resolveMessage = "Click on clause to choose it for resolution"
-      console.log(this.cnf);
     },
 
     showManualResolution() {
@@ -382,7 +379,6 @@ export default {
     },
 
     downloadDimacs() {
-      console.log("download", this.cnf)
       downloadDimacs(convertObjectToDimas(this.cnf))
     },
 
@@ -409,7 +405,7 @@ export default {
     parseToCnfArray(parsedArray, dimacsMaxVariableNumber) {
       let index = 0;
       return parsedArray.map(subArray => {
-        const originalSubArray = subArray.slice(0, -1); // Remove the last number
+        const originalSubArray = subArray.slice(0, -1);
         let arrayElement = {
           variables: [],
           isRoot: true,
@@ -449,7 +445,6 @@ export default {
       dimacsArray.shift();
       if (clausesLength == dimacsArray.length)
         this.cnf = this.parseToCnfArray(dimacsArray, dimacsMaxVariableNumber)
-      console.log("heloo", this.cnf);
       this.cnfTextRepresentation = convertCnfObjectToCnfString(this.cnf);
     }
   }

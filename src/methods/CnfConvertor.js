@@ -314,7 +314,6 @@ export function joinClauses(rootClause) {
   } while (repeat);
 }
 
-//⊥ ⊤
 export function reduceVariables(rootClause) {
   rootClause.variableLength = rootClause.variable.length;
   for (let index = 0; index < rootClause.variableLength; index++) {
@@ -399,7 +398,6 @@ function reduceFinalVariables(rootClause) {
         rootClause.variable = "⊥";
         rootClause.hasVariables = false;
         rootClause.variableLength = 1;
-        // edited = true;
         return true;
       }
       if (rootClause.operands[0] === "∨") {
@@ -436,7 +434,6 @@ function reduceFinalVariables(rootClause) {
       rootClause.operands.splice(0, 1);
       rootClause.variableLength--;
       if (rootClause.variableLength == 1) {
-        // edited = true;
         rootClause.operands = [];
         rootClause.hasVariables = false;
         rootClause.isNeg = rootClause.variable[0].isNeg;
@@ -500,7 +497,6 @@ export function distributiveRule(rootClause) {
         rootClause.operands = result.operands;
         rootClause.variable = result.variable;
         joinClauses(rootClause);
-        // reduceVariables(rootClause); // ¬(A∧C∧(E∨¬G)∧(¬A∨¬B)∧(B∨¬C)∧(¬B∨C)∧(A∨¬C)∧(¬A∨C)) pri tomto nefunguje
         break;
       }
     }
@@ -587,9 +583,8 @@ export function sortVariables(rootClause) {
 
   sortArrayByTypeAndLength(rootClause.variable);
 }
-//¬(((¬D ⇒ ¬C) ⇔ (E ⇒ D)) ∧ ¬((C ⇒ ¬D) ∨ (C ∨ ¬D))) ⇔ ¬((¬(C ∨ C) ∧ (E ∧ D)) ∧ ¬((¬A ∧ C) ⇒ ¬(¬D ∧ E)))
+
 export function convertObjectToFinalArray(obj) {
-  console.log(obj);
   let clausesArray = [];
   let index = 0;
   try {
@@ -609,7 +604,6 @@ export function convertObjectToFinalArray(obj) {
     });
     index++;
   }
-  console.log("FinalArray", clausesArray);
   return clausesArray;
 
   function convertElement(element) {

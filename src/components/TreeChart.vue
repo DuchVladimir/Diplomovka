@@ -243,9 +243,6 @@ export default {
             return false;
         },
 
-        //¬((((¬E ⇒ ¬C) ∨ (G ∨ C)) ⇔ (¬(E ∨ ¬C) ⇔ ¬(E ⇔ A))) ∧ (((B ∧ G) ∨ ¬(¬E ∨ G)) ⇔ (¬(¬A ∨ E) ⇔ (D ∨ D))))
-        //A∧B∧(¬A∨¬B)
-        //¬(¬(((G ∧ ¬C) ∨ ¬(¬B ∧ D)) ⇔ ¬(¬(¬E ∧ G) ⇔ (¬G ∨ E))) ∨ (¬(¬(¬B ⇔ C) ⇔ (A ∧ ¬A)) ⇒ ((¬E ⇒ ¬C) ∨ ¬(¬A ⇒ ¬C))))
         createPointsArrayFromData(data) {
             let newPoints = [];
             data.forEach(clause => {
@@ -338,7 +335,6 @@ export default {
         }
     }
 };
-//(A∨B)∧(¬A∨B)∧A∧¬B
 </script>
 
 <style>

@@ -141,7 +141,7 @@ export default {
 
     function getSubstringAfterLastSlash(inputRef) {
       const inputString = inputRef.value;
-      const lastSlashIndex = lastIndexOfSlash(inputString) // inputString.lastIndexOf('/');
+      const lastSlashIndex = lastIndexOfSlash(inputString)
 
       if (lastSlashIndex === -1) {
         return '';
@@ -201,7 +201,6 @@ export default {
       if (navigator.clipboard && text.length > 0 && !this.textareaClipboard) {
         navigator.clipboard.writeText(text)
         this.textareaClipboard = true;
-        console.log("Clipboar")
         setTimeout(() => {
           this.textareaClipboard = false;
         }, 1000);
@@ -249,7 +248,6 @@ export default {
       }
     },
     selectCommandWithClick() {
-      console.log("selecting");
       try {
         if (this.selectedIndex !== -1) {
           this.selectCommand(this.searchCommand[this.selectedIndex].name);
@@ -261,7 +259,6 @@ export default {
       if (this.searchCommand.length != 0) {
         event.preventDefault();
         this.selectCommandWithClick();
-        console.log("sss")
       }
     },
     replaceTextValues(inputString) {
@@ -283,16 +280,11 @@ export default {
       console.log("joinClauses", formulaLog(rootClause));
 
       reduceVariables(rootClause);
-      console.log("reduceVariables", formulaLog(rootClause));
-
       reduceVariables(rootClause);
       console.log("reduceVariables", formulaLog(rootClause));
 
       distributiveRule(rootClause);
       console.log("distributiveRule", formulaLog(rootClause));
-
-      // reduceVariables(rootClause);
-      // console.log("reduceVariables", formulaLog(rootClause));
 
       sortVariables(rootClause);
       console.log("sortVariables", formulaLog(rootClause));

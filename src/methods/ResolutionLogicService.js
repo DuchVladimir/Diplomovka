@@ -44,7 +44,6 @@ export function resolveLogicalVariables(variables, variable1, variable2) {
   let obj = newVariables[0];
   if (newVariables.length > 0) {
     if (!objectExists(variables, obj)) {
-      console.log(message);
         return {data: obj, message: message};
     } else {
       message = [(
