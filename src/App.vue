@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col items-center h-screen pt-20 mx-auto max-w-screen-lg w-full">
+  <div class="flex flex-col items-center h-screen pt-20 mx-auto max-w-screen-lg w-full pl-12 pr-12">
     <header class="mb-8 w-full h-20">
 
       <p for="search" class="text-gray-900 text-center">
