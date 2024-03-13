@@ -133,6 +133,8 @@
       <TextField v-if="resolutionCnfTextRepresentation.length > 0" :title="'Resolution CNF form'"
         :text=resolutionCnfTextRepresentation />
     </div>
+
+    <footer>Please leave feedback here: <a style="color: #0070CC;" class="underline" href="https://docs.google.com/forms/d/e/1FAIpQLSecd7W9t8zbbu-KCTKwzCeUDC2hGYh1iwjHjwO4ppdF5YfUQw/viewform">https://docs.google.com/forms</a></footer>
   </div>
 </template>
 
