@@ -1,6 +1,6 @@
 <template>
     <div>
-        <div class="mb-4 w-full" v-if="chart && showTree">
+        <div class="mb-4 w-full" v-if="chart && showTree && allPoints.length != 0">
             <div class="w-full items-center justify-center mx-auto text-center">
                 <h4 class="text-center mt-4">{{ value }} out of {{ maxSliderValue }} clauses</h4>
             </div>
@@ -81,7 +81,7 @@ export default {
             this.setCorrectHeight();
         },
         addData(dataArray) {
-            if (dataArray.length == 0) { return };
+            if (dataArray.length == 0) { this.maxSliderValue = 0; return };
             dataArray[dataArray.length - 1].color = 'rgb(247, 204, 196)';
             let lastElement = this.chartOptions.series[0].points[this.chartOptions.series[0].points.length - 1]
             if (lastElement != undefined) {
@@ -268,10 +268,6 @@ export default {
             return newPoints;
 
             function createPointFromDataClause(clause) {
-                let parent = '';
-                if (clause.parents.length > 0) {
-                    parent = clause.parents[0] + ',' + clause.parents[1];
-                }
                 return {
                     name: convertObjectIntoString(clause),
                     id: clause.index.toString(),

@@ -115,7 +115,7 @@ function compareVariables(variableObject1, variableObject2, length) {
       }
     }
   }
-  if (message == null && result.length == 0) {
+  if (message.length == 0 && result.length == 0) {
     message.push(
       "Nothing to add from " +
       createString(variable1) +

@@ -195,6 +195,7 @@ export default {
 
   methods: {
     createRandomFormula() {
+      this.isNegFormula = false;
       this.msg = createRandomFormula();
     },
     copyToClipboard(text) {
@@ -271,26 +272,26 @@ export default {
       console.log("input expression: " + expression);
       
       let rootClause = createFormula(expression);
-      console.log("createFormula", formulaLog(rootClause));
+      console.log("createFormula:", formulaLog(rootClause));
 
       removeClosuresNegations(rootClause);
-      console.log("removeClosuresNegations", formulaLog(rootClause));
+      console.log("removeClosuresNegations:", formulaLog(rootClause));
 
       joinClauses(rootClause);
-      console.log("joinClauses", formulaLog(rootClause));
+      console.log("joinClauses:", formulaLog(rootClause));
 
       reduceVariables(rootClause);
       reduceVariables(rootClause);
-      console.log("reduceVariables", formulaLog(rootClause));
+      console.log("reduceVariables:", formulaLog(rootClause));
 
       distributiveRule(rootClause);
-      console.log("distributiveRule", formulaLog(rootClause));
+      console.log("distributiveRule:", formulaLog(rootClause));
 
       sortVariables(rootClause);
-      console.log("sortVariables", formulaLog(rootClause));
+      console.log("sortVariables:", formulaLog(rootClause));
       
       reduceVariables(rootClause);
-      console.log("reduceVariables", formulaLog(rootClause));
+      console.log("reduceVariables:", formulaLog(rootClause));
 
       return convertObjectToFinalArray(rootClause)
     },
