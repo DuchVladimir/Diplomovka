@@ -129,12 +129,12 @@
     </div>
 
 
-    <div class="input pb-32 mt-5 h-30 w-full">
+    <div class="input pb-5 mt-5 h-30 w-full">
       <TextField v-if="resolutionCnfTextRepresentation.length > 0" :title="'Resolution CNF form'"
         :text=resolutionCnfTextRepresentation />
     </div>
 
-    <footer>Please leave feedback here: <a style="color: #0070CC;" class="underline" href="https://docs.google.com/forms/d/e/1FAIpQLSecd7W9t8zbbu-KCTKwzCeUDC2hGYh1iwjHjwO4ppdF5YfUQw/viewform">https://docs.google.com/forms</a></footer>
+    <footer>Please leave feedback here: <a style="color: #0070CC;" class="pb-32 underline" href="https://docs.google.com/forms/d/e/1FAIpQLSecd7W9t8zbbu-KCTKwzCeUDC2hGYh1iwjHjwO4ppdF5YfUQw/viewform">https://docs.google.com/forms</a></footer>
   </div>
 </template>
 
