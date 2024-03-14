@@ -68,20 +68,20 @@
       v-if="(showList || showTree) && cnf && !(cnf[0].variables[0].variable == '⊤' || cnf[0].variables[0].variable == '⊥')">
       <ul class="flex flex-wrap items-center justify-center text-gray-900 dark:text-white space-y-2">
         <li class="mt-2">
-          <p class="md:me-2 p-2 pr-4 font-bold pl-4 rounded-lg border border-gray-200 no-select"
-            :style="{ color: 'rgb(55, 55, 55)', backgroundColor: 'rgb(224, 227, 231)' }">
+          <p class="md:me-2 p-2 pr-4  pl-4 rounded-lg border border-gray-200 no-select"
+            :style="{ color: 'rgb(55, 55, 55)', background: 'linear-gradient(45deg, rgb(51, 51, 51) 10px,rgba(255,255,255,1) 13px)' }">
             Original CNF clause
           </p>
         </li>
         <li class="mt-2">
-          <p class="md:me-2 p-2 pr-4 font-bold pl-4 rounded-lg border border-gray-200 no-select"
-            :style="{ color: 'rgb(50, 50, 50)', backgroundColor: 'rgb(247, 246, 196)' }">
+          <p class="md:me-2 p-2 pr-4  pl-4 rounded-lg border border-gray-200 no-select"
+            :style="{ color: 'rgb(50, 50, 50)', background: 'linear-gradient(45deg, rgb(252, 219, 3) 10px,rgba(255,255,255,1) 13px)' }">
             Created by resolution method
           </p>
         </li>
         <li class="mt-2">
-          <p class="md:me-2 p-2 pr-4 font-bold pl-4 rounded-lg border border-gray-200 no-select"
-            :style="{ color: 'rgb(45, 45, 45)', backgroundColor: 'rgb(247, 204, 196)' }">
+          <p class="md:me-2 p-2 pr-4  pl-4 rounded-lg border border-gray-200 no-select"
+            :style="{ color: 'rgb(45, 45, 45)', background: 'linear-gradient(45deg, rgb(252, 53, 3) 10px,rgba(255,255,255,1) 13px)' }">
             Last added with resolution method
           </p>
         </li>
@@ -90,32 +90,36 @@
 
     <div class="input mb-3 mt-4 h-30 w-full"
       v-if="showList && cnf && !(cnf[0].variables[0].variable == '⊤' || cnf[0].variables[0].variable == '⊥')">
-      <div class="w-full items-center justify-center mx-auto text-center text-l font-bold"
-        v-if="resolutionListCnf.length > 0">Filter</div>
-      <ul class="flex flex-wrap items-center justify-center text-gray-900 dark:text-white space-y-2 mb-8">
-        <li v-for="(variable, index) in allVariablesList" :key="index" class="mt-2">
-          <PrimeButton
-            class=" md:me-2 p-2 pr-4 pl-4 rounded-lg border border-gray-200 no-select p-button-outlined p-button-raised"
-            :class="{ 'button-active': isVariableToggled(variable, false) }" @click="toggleVariable(variable, false)">
-            {{ variable }}
-          </PrimeButton>
-          <PrimeButton
-            class=" md:me-2 p-2 pr-4 pl-4 rounded-lg border border-gray-200 no-select p-button-outlined p-button-raised"
-            :class="{ 'button-active': isVariableToggled(variable, true) }" @click="toggleVariable(variable, true)">
-            {{ "¬" + variable }}
-          </PrimeButton>
-        </li>
-      </ul>
-
       <div class="w-full items-center justify-center mx-auto text-center whitespace-pre-line text-l font-bold"
         v-if="resolutionState == 'manual' && userResolutionCnf.length > 0">{{ resolveMessage }}</div>
       <ul class="flex flex-wrap items-center justify-center text-gray-900 dark:text-white space-y-2">
         <li v-for="(clause, index) in resolutionListCnf" :key="index" class="mt-2">
-          <button class="md:me-2 p-2 pr-4 pl-4 rounded-lg border border-gray-200 no-select"
+          <PrimeButton class="clause-button md:me-2 p-2 pr-6 pl-6 rounded-lg border-none border-gray-200 no-select p-button-outlined p-button-raised"
             :disabled="resolutionState !== 'manual'" @click="markClause(clause)"
-            :style="{ backgroundColor: isClauseSelected(clause) ? 'rgb(153, 187, 240)' : ((clause.index === (resolutionState == 'manual' ? userResolutionCnf[userResolutionCnf.length - 1].index : originalResolutionCnf[originalResolutionCnf.length - 1].index) && !clause.isRoot) ? 'rgb(247, 204, 196)' : (clause.isRoot ? 'rgb(224, 227, 231)' : 'rgb(247, 246, 196)')) }">
+            :style="{ background: isClauseSelected(clause)? '' : 'linear-gradient(45deg,'+ ((clause.index === (resolutionState == 'manual' ? 
+            userResolutionCnf[userResolutionCnf.length - 1].index : originalResolutionCnf[originalResolutionCnf.length - 1].index) && 
+            !clause.isRoot) ? 'rgb(252, 53, 3)' : (clause.isRoot ? 'rgb(51, 51, 51)' : 'rgb(252, 219, 3)')) +'10px,rgba(255,255,255,1) 13px)' , 
+            backgroundColor: isClauseSelected(clause) ? 'rgb(153, 187, 240)' : 'rgb(246,251,255)' , color:isClauseSelected(clause)?'rgb(255,255,255)':''}">
             {{ formatClause(clause) }}
-          </button>
+          </PrimeButton>
+        </li>
+      </ul>
+
+
+      <div class="w-full pt-6 items-center justify-center mx-auto text-center text-l font-bold"
+        v-if="resolutionListCnf.length > 0">Filter</div>
+      <ul class="flex flex-wrap items-center justify-center text-gray-900 dark:text-white space-y-2 mb-2">
+        <li v-for="(variable, index) in allVariablesList" :key="index" class="mt-2">
+          <PrimeButton
+            class=" md:me-2 p-1 pr-2 pl-2 rounded-lg border border-gray-200 no-select p-button-outlined p-button-raised"
+            :class="{ 'button-active': isVariableToggled(variable, false) }" @click="toggleVariable(variable, false)">
+            {{ variable }}
+          </PrimeButton>
+          <PrimeButton
+            class=" md:me-2 p-1 pr-2 pl-2 rounded-lg border border-gray-200 no-select p-button-outlined p-button-raised"
+            :class="{ 'button-active': isVariableToggled(variable, true) }" @click="toggleVariable(variable, true)">
+            {{ "¬" + variable }}
+          </PrimeButton>
         </li>
       </ul>
     </div>
@@ -134,7 +138,9 @@
         :text=resolutionCnfTextRepresentation />
     </div>
 
-    <footer>Please leave feedback here: <a style="color: #0070CC;" class="pb-32 underline" href="https://docs.google.com/forms/d/e/1FAIpQLSecd7W9t8zbbu-KCTKwzCeUDC2hGYh1iwjHjwO4ppdF5YfUQw/viewform">https://docs.google.com/forms</a></footer>
+    <footer>Please leave feedback here: <a style="color: #0070CC;" class="pb-32 underline"
+        href="https://docs.google.com/forms/d/e/1FAIpQLSecd7W9t8zbbu-KCTKwzCeUDC2hGYh1iwjHjwO4ppdF5YfUQw/viewform">https://docs.google.com/forms</a>
+    </footer>
   </div>
 </template>
 
@@ -197,7 +203,6 @@ export default {
       return clause => this.selectedClauses.some(selected => selected.index === clause.index);
     }
   },
-
   methods: {
     showCnf(cnfFormula) {
       this.cnf = cnfFormula
@@ -476,6 +481,11 @@ export default {
 
 .resolution-text-area-width {
   width: 100%;
+}
+
+.clause-button:hover{
+  border:none !important;
+  background: rgb(246,251,255) !important;
 }
 
 .important-hover:hover {

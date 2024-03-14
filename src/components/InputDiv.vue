@@ -3,8 +3,8 @@
   <div>
     <div id="input" class="col-12 md:col-4 input">
       <PrimeButton :class="{ 'negation-button-active': isNegFormula }"
-        class="p-2 pr-4 pl-4 rounded-lg border border-gray-200 no-select p-button-outlined p-button-raised negation-button pt-3 pb-3 mb-2" label="Negate formula"
-        @click="negFormula">
+        class="p-2 pr-4 pl-4 rounded-lg border border-gray-200 no-select p-button-outlined p-button-raised negation-button pt-3 pb-3 mb-2"
+        label="Negate formula" @click="negFormula">
       </PrimeButton>
       <div class="p-inputgroup flex justify-between items-end ">
         <PrimeButton icon="pi pi-check" class="p-button-info flex-none flex h-full" @click="createRandomFormula">
@@ -14,7 +14,8 @@
           <textarea wrap="soft" rows="4" class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg 
               border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 
               dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-            placeholder='Type here...&#10;Example with input variants: ¬(((!E ⇔ ∼E) <=> (E or ¬G)) ⇒ (¬(neg A ∨ NEG B) || (¬C ⇔ B))) AND (((¬A <-> ¬C) /\ ¬(¬C ∨ ¬A)) & ¬(¬(D \/ ¬D) ∧ (D impl ¬C)))&#10;You can submit empty input to test this clause.' type="text" v-model="msg" ref="input" @keydown.down="handleArrowDown($event)"
+            placeholder='Type here...&#10;Example with input variants: ¬(((!E ⇔ ∼E) <=> (E or ¬G)) ⇒ (¬(neg A ∨ NEG B) || (¬C ⇔ B))) AND (((¬A <-> ¬C) /\ ¬(¬C ∨ ¬A)) & ¬(¬(D \/ ¬D) ∧ (D impl ¬C)))&#10;You can submit empty input to test this clause.'
+            type="text" v-model="msg" ref="input" @keydown.down="handleArrowDown($event)"
             @keydown.up="handleArrowUp($event)" @keydown.tab.prevent="handleTab"
             @keydown.enter="selectCommandWithEnter($event)"></textarea>
 
@@ -30,9 +31,9 @@
               <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
               <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
             </svg>
-            <svg v-else class="js-clipboard-success w-4 h-4 text-green-600" xmlns="http://www.w3.org/2000/svg" width="24"
-              height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"
-              stroke-linejoin="round">
+            <svg v-else class="js-clipboard-success w-4 h-4 text-green-600" xmlns="http://www.w3.org/2000/svg"
+              width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4"
+              stroke-linecap="round" stroke-linejoin="round">
               <polyline points="20 6 9 17 4 12" />
             </svg>
           </button>
@@ -55,26 +56,57 @@
     <div class="grid buttons">
       <div class="col-12">
         <div class="p-inputgroup">
-          <PrimeButton label="A" class="p-2 pr-4 pl-4 rounded-lg border w-full border-gray-200 no-select p-button-outlined p-button-raised " @click="this.addSymbol('A')" />
-          <PrimeButton label="B" class="p-2 pr-4 pl-4 rounded-lg border w-full border-gray-200 no-select p-button-outlined p-button-raised " @click="this.addSymbol('B')" />
-          <PrimeButton label="C" class="p-2 pr-4 pl-4 rounded-lg border w-full border-gray-200 no-select p-button-outlined p-button-raised" @click="this.addSymbol('C')" />
-          <PrimeButton label="D" class="p-2 pr-4 pl-4 rounded-lg border w-full border-gray-200 no-select p-button-outlined p-button-raised " @click="this.addSymbol('D')" />
-          <PrimeButton label="¬" class="p-2 pr-4 pl-4 rounded-lg border w-full border-gray-200 no-select p-button-outlined p-button-raised " @click="this.addSymbol('¬')" />
-          <PrimeButton label="∧" class="p-2 pr-4 pl-4 rounded-lg border w-full border-gray-200 no-select p-button-outlined p-button-raised " @click="this.addSymbol('∧')" />
-          <PrimeButton label="∨" class="p-2 pr-4 pl-4 rounded-lg border w-full border-gray-200 no-select p-button-outlined p-button-raised " @click="this.addSymbol('∨')" />
-          <PrimeButton label="⇒" class="p-2 pr-4 pl-4 rounded-lg border w-full border-gray-200 no-select p-button-outlined p-button-raised " @click="this.addSymbol('⇒')" />
-          <PrimeButton label="⇔" class="p-2 pr-4 pl-4 rounded-lg border w-full border-gray-200 no-select p-button-outlined p-button-raised " @click="this.addSymbol('⇔')" />
-          <PrimeButton label="(" class="p-2 pr-4 pl-4 rounded-lg border w-full border-gray-200 no-select p-button-outlined p-button-raised" @click="this.addSymbol('(')" />
-          <PrimeButton label=")" class="p-2 pr-4 pl-4 rounded-lg border w-full border-gray-200 no-select p-button-outlined p-button-raised" @click="this.addSymbol(')')" />
-          <PrimeButton label="⊤" class="p-2 pr-4 pl-4 rounded-lg border w-full border-gray-200 no-select p-button-outlined p-button-raised" @click="this.addSymbol('⊤')" />
-          <PrimeButton label="⊥" class="p-2 pr-4 pl-4 rounded-lg border w-full border-gray-200 no-select p-button-outlined p-button-raised" @click="this.addSymbol('⊥')" />
-          <PrimeButton id="deleteBtn" icon="pi pi-delete-left" class="p-2 pr-4 pl-4 rounded-lg border w-full border-gray-200 no-select p-button-raised p-button-warning"
+          <PrimeButton label="A"
+            class="p-2 pr-4 pl-4 rounded-lg border w-full border-gray-200 no-select p-button-outlined p-button-raised "
+            @click="this.addSymbol('A')" />
+          <PrimeButton label="B"
+            class="p-2 pr-4 pl-4 rounded-lg border w-full border-gray-200 no-select p-button-outlined p-button-raised "
+            @click="this.addSymbol('B')" />
+          <PrimeButton label="C"
+            class="p-2 pr-4 pl-4 rounded-lg border w-full border-gray-200 no-select p-button-outlined p-button-raised"
+            @click="this.addSymbol('C')" />
+          <PrimeButton label="D"
+            class="p-2 pr-4 pl-4 rounded-lg border w-full border-gray-200 no-select p-button-outlined p-button-raised "
+            @click="this.addSymbol('D')" />
+          <PrimeButton label="¬"
+            class="p-2 pr-4 pl-4 rounded-lg border w-full border-gray-200 no-select p-button-outlined p-button-raised "
+            @click="this.addSymbol('¬')" />
+          <PrimeButton label="∧"
+            class="p-2 pr-4 pl-4 rounded-lg border w-full border-gray-200 no-select p-button-outlined p-button-raised "
+            @click="this.addSymbol('∧')" />
+          <PrimeButton label="∨"
+            class="p-2 pr-4 pl-4 rounded-lg border w-full border-gray-200 no-select p-button-outlined p-button-raised "
+            @click="this.addSymbol('∨')" />
+          <PrimeButton label="⇒"
+            class="p-2 pr-4 pl-4 rounded-lg border w-full border-gray-200 no-select p-button-outlined p-button-raised "
+            @click="this.addSymbol('⇒')" />
+          <PrimeButton label="⇔"
+            class="p-2 pr-4 pl-4 rounded-lg border w-full border-gray-200 no-select p-button-outlined p-button-raised "
+            @click="this.addSymbol('⇔')" />
+          <PrimeButton label="("
+            class="p-2 pr-4 pl-4 rounded-lg border w-full border-gray-200 no-select p-button-outlined p-button-raised"
+            @click="this.addSymbol('(')" />
+          <PrimeButton label=")"
+            class="p-2 pr-4 pl-4 rounded-lg border w-full border-gray-200 no-select p-button-outlined p-button-raised"
+            @click="this.addSymbol(')')" />
+          <PrimeButton label="⊤"
+            class="p-2 pr-4 pl-4 rounded-lg border w-full border-gray-200 no-select p-button-outlined p-button-raised"
+            @click="this.addSymbol('⊤')" />
+          <PrimeButton label="⊥"
+            class="p-2 pr-4 pl-4 rounded-lg border w-full border-gray-200 no-select p-button-outlined p-button-raised"
+            @click="this.addSymbol('⊥')" />
+          <PrimeButton id="deleteBtn" icon="pi pi-delete-left"
+            class="p-2 pr-4 pl-4 rounded-lg border w-full border-gray-200 no-select p-button-raised p-button-warning"
             @click="this.removeLastSymbol()" />
-          <PrimeButton icon="pi pi-trash" class="p-2 pr-4 pl-4 rounded-lg border w-full border-gray-200 no-select  p-button-danger p-button-raised" @click="toggleOverlay" />
+          <PrimeButton icon="pi pi-trash"
+            class="p-2 pr-4 pl-4 rounded-lg border w-full border-gray-200 no-select  p-button-danger p-button-raised"
+            @click="toggleOverlay" />
         </div>
         <div>
           <OverlayPanel ref="op" :dismissable="true" appendTo="body" :showCloseIcon="false" id="overlay_panel">
-            <PrimeButton icon="pi pi-trash" class="p-2 pr-4 pl-4 rounded-lg border w-full border-gray-200 no-select p-button-danger p-button-raised" @click="this.removeAllSymbols()" />
+            <PrimeButton icon="pi pi-trash"
+              class="p-2 pr-4 pl-4 rounded-lg border w-full border-gray-200 no-select p-button-danger p-button-raised"
+              @click="this.removeAllSymbols()" />
           </OverlayPanel>
         </div>
       </div>
@@ -94,12 +126,22 @@ import {
   convertObjectToFinalArray,
   formulaLog
 } from "../methods/CnfConvertor";
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import commandList from '../assets/data/commands.json';
 import replacementArray from '../assets/data/inputReplacements.json';
 
 export default {
   setup() {
+    const input = ref(null);
+    const setCursorPosition = (position) => {
+      if (input.value) {
+        setTimeout(() => {
+          input.value.focus();
+          input.value.setSelectionRange(position+1, position+1);
+        }, 50);
+      }
+    };
+
     let msg = ref("")
     const searchCommand = computed(() => {
       let inputCommand = getSubstringAfterLastSlash(msg);
@@ -128,7 +170,8 @@ export default {
       msg,
       searchCommand,
       selectCommand,
-      selectedCommand
+      selectedCommand,
+      input
     }
 
     function applyCommand(command) {
@@ -164,9 +207,13 @@ export default {
       }
     }
 
+
     function replaceSubstringAfterLastSlash(inputRef, replacement) {
       const inputString = inputRef.value;
-      const lastSlashIndex = inputString.lastIndexOf('/');
+      let lastSlashIndex = inputString.lastIndexOf('/');
+      if (lastSlashIndex == -1) {
+        lastSlashIndex = inputString.lastIndexOf('\\');
+      }
       const nextSpaceIndex = inputString.indexOf(' ', lastSlashIndex);
       if (lastSlashIndex === -1) {
         return inputString;
@@ -174,12 +221,16 @@ export default {
       if (nextSpaceIndex === -1) {
         const newString = inputString.substring(0, lastSlashIndex) + replacement
         inputRef.value = newString;
+        setCursorPosition(lastSlashIndex);
         return newString;
       }
       const newString = inputString.substring(0, lastSlashIndex) + replacement + inputString.substring(nextSpaceIndex);
       inputRef.value = newString;
+      setCursorPosition(lastSlashIndex);
       return newString;
     }
+
+
   },
   name: "InputDiv",
   data: function () {
@@ -270,7 +321,7 @@ export default {
     },
     convertToCNF(expression) {
       console.log("input expression: " + expression);
-      
+
       let rootClause = createFormula(expression);
       console.log("createFormula:", formulaLog(rootClause));
 
@@ -289,7 +340,7 @@ export default {
 
       sortVariables(rootClause);
       console.log("sortVariables:", formulaLog(rootClause));
-      
+
       reduceVariables(rootClause);
       console.log("reduceVariables:", formulaLog(rootClause));
 
@@ -344,7 +395,7 @@ export default {
       this.$refs.op.toggle(event);
     },
     sendMsg() {
-      if(this.msg.length == 0) {this.msg = "¬(((¬E ⇔ ¬E) ⇔ (E ∨ ¬G)) ⇒ (¬(¬A ∨ ¬B) ∨ (¬C ⇔ B))) ∧ (((¬A ⇔ ¬C) ∧ ¬(¬C ∨ ¬A)) ∧ ¬(¬(D ∨ ¬D) ∧ (D ⇒ ¬C)))";}
+      if (this.msg.length == 0) { this.msg = "¬(((¬E ⇔ ¬E) ⇔ (E ∨ ¬G)) ⇒ (¬(¬A ∨ ¬B) ∨ (¬C ⇔ B))) ∧ (((¬A ⇔ ¬C) ∧ ¬(¬C ∨ ¬A)) ∧ ¬(¬(D ∨ ¬D) ∧ (D ⇒ ¬C)))"; }
       let editedExpression = "(" + this.replaceTextValues(this.msg) + ")";
       if (!this.checkMsg(editedExpression)) return false;
       let cnfFormula = this.convertToCNF(editedExpression);
@@ -554,12 +605,14 @@ export default {
 .p-button.p-button-warning,
 .p-buttonset.p-button-warning>.p-button,
 .p-splitbutton.p-button-warning>.p-button {
-	background: #fab710;
-	color: #ffffff;
-	border-color: #fab710;
+  background: #fab710;
+  color: #ffffff;
+  border-color: #fab710;
 }
 
-.p-button.p-button-warning:enabled:hover, .p-buttonset.p-button-warning > .p-button:enabled:hover, .p-splitbutton.p-button-warning > .p-button:enabled:hover {
+.p-button.p-button-warning:enabled:hover,
+.p-buttonset.p-button-warning>.p-button:enabled:hover,
+.p-splitbutton.p-button-warning>.p-button:enabled:hover {
   border: 1px solid #b98607;
   color: #b98607;
   background: #ffffff;
@@ -569,45 +622,63 @@ export default {
 .p-buttonset.p-button-danger>.p-button,
 .p-splitbutton.p-button-danger>.p-button {
   background: #c02929;
-	color: #ffffff;
-	border-color: #c02929;
+  color: #ffffff;
+  border-color: #c02929;
 }
 
-.p-button.p-button-danger:enabled:hover, .p-buttonset.p-button-danger > .p-button:enabled:hover, .p-splitbutton.p-button-danger > .p-button:enabled:hover {
+.p-button.p-button-danger:enabled:hover,
+.p-buttonset.p-button-danger>.p-button:enabled:hover,
+.p-splitbutton.p-button-danger>.p-button:enabled:hover {
   border: 1px solid #a60606;
   color: #a60606;
   background: #ffffff;
 }
 
-.p-inputgroup-addon:first-child, .p-inputgroup button:first-child, .p-inputgroup input:first-child, .p-inputgroup > .p-inputwrapper:first-child, .p-inputgroup > .p-inputwrapper:first-child > .p-inputtext {
-	border-top-left-radius: 0.5rem;
-	border-bottom-left-radius: 0.5rem;
+.p-inputgroup-addon:first-child,
+.p-inputgroup button:first-child,
+.p-inputgroup input:first-child,
+.p-inputgroup>.p-inputwrapper:first-child,
+.p-inputgroup>.p-inputwrapper:first-child>.p-inputtext {
+  border-top-left-radius: 0.5rem;
+  border-bottom-left-radius: 0.5rem;
 }
 
-.p-inputgroup-addon:last-child, .p-inputgroup button:last-child, .p-inputgroup input:last-child, .p-inputgroup > .p-inputwrapper:last-child, .p-inputgroup > .p-inputwrapper:last-child > .p-inputtext {
-	border-top-right-radius:  0.5rem;
-	border-bottom-right-radius:  0.5rem;
+.p-inputgroup-addon:last-child,
+.p-inputgroup button:last-child,
+.p-inputgroup input:last-child,
+.p-inputgroup>.p-inputwrapper:last-child,
+.p-inputgroup>.p-inputwrapper:last-child>.p-inputtext {
+  border-top-right-radius: 0.5rem;
+  border-bottom-right-radius: 0.5rem;
 }
 
-.p-button.p-button-info, .p-buttonset.p-button-info > .p-button, .p-splitbutton.p-button-info > .p-button {
+.p-button.p-button-info,
+.p-buttonset.p-button-info>.p-button,
+.p-splitbutton.p-button-info>.p-button {
 
   background: #027abc;
-	color: #ffffff;
-	border-color: #027abc;
+  color: #ffffff;
+  border-color: #027abc;
 }
 
-.p-button.p-button-info:enabled:hover, .p-buttonset.p-button-info > .p-button:enabled:hover, .p-splitbutton.p-button-info > .p-button:enabled:hover {
+.p-button.p-button-info:enabled:hover,
+.p-buttonset.p-button-info>.p-button:enabled:hover,
+.p-splitbutton.p-button-info>.p-button:enabled:hover {
   color: #027abc;
   background: #ffffff;
 }
 
-.p-button.p-button-success, .p-buttonset.p-button-success > .p-button, .p-splitbutton.p-button-success > .p-button {
+.p-button.p-button-success,
+.p-buttonset.p-button-success>.p-button,
+.p-splitbutton.p-button-success>.p-button {
   background: #5e8f32;
-	color: #ffffff;
-	border-color: #5e8f32
+  color: #ffffff;
+  border-color: #5e8f32
 }
 
-.p-button.p-button-success:enabled:hover, .p-buttonset.p-button-success > .p-button:enabled:hover, .p-splitbutton.p-button-success > .p-button:enabled:hover {
+.p-button.p-button-success:enabled:hover,
+.p-buttonset.p-button-success>.p-button:enabled:hover,
+.p-splitbutton.p-button-success>.p-button:enabled:hover {
   color: #689F38;
   background: #ffffff;
 }
