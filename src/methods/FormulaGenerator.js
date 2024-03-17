@@ -1,4 +1,6 @@
-const operators = ["∧", "∨", "=>", "<=>"];
+import * as constants from "./../assets/data/constants";
+
+const operators = [constants.AND_OPERAND, constants.OR_OPERAND, constants.IMPICATION_OPERAND, constants.BICONDITION_OPERAND];
 const variables = ["A", "B", "C", "D", "E", "G"];
 
 export function createRandomFormula() {
