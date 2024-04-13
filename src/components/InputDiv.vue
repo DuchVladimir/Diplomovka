@@ -2,12 +2,9 @@
   <Toast />
   <div>
     <div id="input" class="col-12 md:col-4 input">
-      <PrimeButton :class="{ 'negation-button-active': isNegFormula }"
-        class="p-2 pr-4 pl-4 rounded-lg border border-gray-200 no-select p-button-outlined p-button-raised negation-button pt-3 pb-3 mb-2"
-        label="Negate formula" @click="negFormula">
-      </PrimeButton>
+
       <div class="p-inputgroup flex justify-between items-end ">
-        <PrimeButton icon="pi pi-check" class="p-button-info flex-none flex h-full" @click="createRandomFormula">
+        <PrimeButton icon="pi pi-check" class="p-button-info flex-none flex h-24" @click="createRandomFormula">
           <font-awesome-icon class="p-1.5 h-4.5" icon="fa-solid fa-dice" />
         </PrimeButton>
         <div class="flex-auto">
@@ -49,7 +46,7 @@
             </li>
           </ul>
         </div>
-        <PrimeButton icon="pi pi-check" class="p-button-success flex-none h-full" @click="sendMsg" />
+        <PrimeButton icon="pi pi-check" class="p-button-success flex-none h-24" @click="sendMsg" />
       </div>
     </div>
 
@@ -102,6 +99,10 @@
             class="p-2 pr-4 pl-4 rounded-lg border w-full border-gray-200 no-select  p-button-danger p-button-raised"
             @click="toggleOverlay" />
         </div>
+        <PrimeButton :class="{ 'negation-button-active': isNegFormula }"
+        class="p-2 pr-4 pl-4 rounded-lg border border-gray-200 no-select p-button-outlined p-button-raised w-full mt-2 pt-3 pb-3 mb-6"
+        label="Negate formula" @click="negFormula">
+      </PrimeButton>
         <div>
           <OverlayPanel ref="op" :dismissable="true" appendTo="body" :showCloseIcon="false" id="overlay_panel">
             <PrimeButton icon="pi pi-trash"
@@ -584,12 +585,6 @@ export default {
 .buttons {
   margin-top: 5px;
   grid-gap: 5px;
-}
-
-.negation-button {
-  margin-left: 14%;
-  width: 72%;
-  margin-right: 14%;
 }
 
 .negation-button-active {

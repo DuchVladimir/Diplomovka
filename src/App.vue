@@ -5,12 +5,8 @@
       <p for="search" class="text-gray-900 text-center">
         This tool generates a visualization of the resolution method for propositional logic formulas. A given formula
         is
-        not automatically negated.
-        Negate the formula manually or with the button. You can specify the logical
-        operators in several different formats. For example, the propositional formula p ∧ q ⇒ ¬r can be written as p
-        && q -> ~r, as p and q => not r, or as p & q => !r. You can also write "/" for ease of entering commands. You
-        can
-        import DIMACS.txt file or copy the formulas in LaTeX format.
+        not automatically negated. You can specify the logical
+        operators in several different formats. You can also write "/" for ease of entering commands.
       </p>
 
     </header>
@@ -18,33 +14,30 @@
     <div class="input mb-3 h-30">
       <InputDiv v-on:cnfFormula="showCnf" v-on:inputChange="handleInputChange" />
       <div class="flex pt-2">
+        <PrimeButton label="Import cnf from DIMACS"
+          class="p-2 pr-4 pl-4 rounded-lg border w-full border-gray-200 no-select p-button-outlined p-button-raised  md:me-1"
+          @click="triggerFileInput" />
+
+        <PrimeButton :label="buttonLabels.CopyInputAsLatexLabel.value" :class="{
+          'border-green-700 text-green-700 important-hover': !buttonLabels.CopyInputAsLatexLabel.isDefault
+        }" class="p-2 pr-4 pl-4 rounded-lg border w-full border-gray-200 no-select p-button-outlined p-button-raised"
+          @click="clipboardInputLatex(inputText)" />
+        <input type="file" ref="fileInput" @change="handleFileUpload" accept=".txt" style="display: none;">
+      </div>
+      <div class="flex pt-2" v-if="cnf != null">
         <PrimeButton label="Export cnf as DIMACS"
           class="p-2 pr-4 pl-4 rounded-lg border w-full border-gray-200 no-select p-button-outlined p-button-raised md:me-1"
           @click="downloadDimacs" />
-        <PrimeButton label="Import cnf from DIMACS"
-          class="p-2 pr-4 pl-4 rounded-lg border w-full border-gray-200 no-select p-button-outlined p-button-raised"
-          @click="triggerFileInput" />
-        <input type="file" ref="fileInput" @change="handleFileUpload" accept=".txt" style="display: none;">
-      </div>
-      <div class="flex pt-2">
-        <PrimeButton :label="buttonLabels.CopyInputAsLatexLabel.value" :class="{
-        'border-green-700 text-green-700 important-hover': !buttonLabels.CopyInputAsLatexLabel.isDefault
-      }" class="p-2 pr-4 pl-4 rounded-lg border w-full border-gray-200 no-select p-button-outlined p-button-raised md:me-1"
-          @click="clipboardInputLatex(inputText)" />
         <PrimeButton :label="buttonLabels.CopyCnfAsLatexLabel.value" :class="{
-        'border-green-700 text-green-700 important-hover': !buttonLabels.CopyCnfAsLatexLabel.isDefault
-      }" class="p-2 pr-4 pl-4 rounded-lg border w-full border-gray-200 no-select p-button-outlined p-button-raised"
+          'border-green-700 text-green-700 important-hover': !buttonLabels.CopyCnfAsLatexLabel.isDefault
+        }" class="p-2 pr-4 pl-4 rounded-lg border w-full border-gray-200 no-select p-button-outlined p-button-raised"
           @click="clipboardCnfLatex(cnfTextRepresentation)" />
       </div>
-    </div>
-    <div v-if="cnf != null" class="input mb-3 h-30 w-full">
-      <div class="text-area-width flex-auto items-center justify-center mx-auto">
-        <TextField :title="'CNF form'" :text=cnfTextRepresentation />
-      </div>
-      <hr class="mt-6">
+      <hr class="mt-14 mb-5">
     </div>
 
-    <div class="flex pt-8 w-full">
+
+    <div class="flex pt-8 w-full" v-if="cnf != null">
       <PrimeButton label="Interactive resolution method" :class="{ 'button-active': resolutionState == 'manual' }"
         class="p-2 pr-4 pl-4 rounded-lg border w-full border-gray-200 no-select p-button-outlined p-button-raised md:me-1"
         @click="showManualResolution" />
@@ -52,7 +45,7 @@
         class="p-2 pr-4 pl-4 rounded-lg border w-full border-gray-200 no-select p-button-outlined p-button-raised"
         @click="showAutoResolution" />
     </div>
-    <div class="flex pt-2 w-full">
+    <div class="flex pt-2 w-full" v-if="cnf != null && resolutionState != 'start'">
       <PrimeButton label="Show tree" :class="{ 'button-active': showTree }"
         class="p-2 pr-4 pl-4 rounded-lg border w-full border-gray-200 no-select p-button-outlined p-button-raised md:me-1"
         @click="() => { showTree = !showTree }" />
@@ -63,6 +56,8 @@
         class="p-2 pr-4 pl-4 rounded-lg border w-full border-gray-200 no-select p-button-outlined p-button-raised"
         @click="() => { showTable = !showTable }" />
     </div>
+
+
 
     <div class="mb-4 mt-8"
       v-if="(showList || showTree) && cnf && !(cnf[0].variables[0].variable == '⊤' || cnf[0].variables[0].variable == '⊥')">
@@ -94,12 +89,15 @@
         v-if="resolutionState == 'manual' && userResolutionCnf.length > 0">{{ resolveMessage }}</div>
       <ul class="flex flex-wrap items-center justify-center text-gray-900 dark:text-white space-y-2">
         <li v-for="(clause, index) in resolutionListCnf" :key="index" class="mt-2">
-          <PrimeButton class="clause-button md:me-2 p-2 pr-6 pl-6 rounded-lg border-none border-gray-200 no-select p-button-outlined p-button-raised"
+          <PrimeButton
+            class="clause-button md:me-2 p-2 pr-6 pl-6 rounded-lg border-none border-gray-200 no-select p-button-outlined p-button-raised"
             :disabled="resolutionState !== 'manual'" @click="markClause(clause)"
-            :style="{ background: isClauseSelected(clause)? '' : 'linear-gradient(45deg,'+ ((clause.index === (resolutionState == 'manual' ? 
-            userResolutionCnf[userResolutionCnf.length - 1].index : originalResolutionCnf[originalResolutionCnf.length - 1].index) && 
-            !clause.isRoot) ? 'rgb(252, 53, 3)' : (clause.isRoot ? 'rgb(51, 51, 51)' : 'rgb(252, 219, 3)')) +'10px,rgba(255,255,255,1) 13px)' , 
-            backgroundColor: isClauseSelected(clause) ? 'rgb(153, 187, 240)' : 'rgb(246,251,255)' , color:isClauseSelected(clause)?'rgb(255,255,255)':''}">
+            :style="{
+              background: isClauseSelected(clause) ? '' : 'linear-gradient(45deg,' + ((clause.index === (resolutionState == 'manual' ?
+                userResolutionCnf[userResolutionCnf.length - 1].index : originalResolutionCnf[originalResolutionCnf.length - 1].index) &&
+                !clause.isRoot) ? 'rgb(252, 53, 3)' : (clause.isRoot ? 'rgb(51, 51, 51)' : 'rgb(252, 219, 3)')) + '10px,rgba(255,255,255,1) 13px)',
+              backgroundColor: isClauseSelected(clause) ? 'rgb(153, 187, 240)' : 'rgb(246,251,255)', color: isClauseSelected(clause) ? 'rgb(255,255,255)' : ''
+            }">
             {{ formatClause(clause) }}
           </PrimeButton>
         </li>
@@ -133,9 +131,14 @@
     </div>
 
 
+    <div v-if="cnf != null" class="input mb-3 h-30 w-full">
+      <hr class="mt-6 mb-12">
+      <TextField :title="'CNF form'" :text=cnfTextRepresentation />
+    </div>
+
     <div class="input pb-5 mt-5 h-30 w-full">
-      <TextField v-if="resolutionCnfTextRepresentation.length > 0" :title="'Resolution CNF form'"
-        :text=resolutionCnfTextRepresentation />
+      <TextField v-if="resolutionCnfTextRepresentation.length > 0 && resolutionState != 'start'"
+        :title="'Resolution CNF form'" :text=resolutionCnfTextRepresentation />
     </div>
 
     <footer>Please leave feedback here: <a style="color: #0070CC;" class="pb-32 underline"
@@ -179,12 +182,12 @@ export default {
       dimacsString: "",
       textareaClipboard: false,
       resolutionTextareaClipboard: false,
-      resolutionState: 'manual',
+      resolutionState: 'start',
       selectedClauses: [],
       inputText: "",
       showTree: false,
       showTable: false,
-      showList: true,
+      showList: false,
       buttonLabels: {
         CopyInputAsLatexLabel: {
           value: "Copy input as LaTeX",
@@ -236,6 +239,7 @@ export default {
     },
     showAutoResolution() {
       this.resolutionState = 'auto';
+      this.showList = true;
       this.selectedClauses = [];
       this.resolutionCnf = JSON.parse(JSON.stringify(this.originalResolutionCnf));
       this.resolutionListCnf = this.filterByToggleList(JSON.parse(JSON.stringify(this.resolutionCnf)));
@@ -483,9 +487,9 @@ export default {
   width: 100%;
 }
 
-.clause-button:hover{
-  border:none !important;
-  background: rgb(246,251,255) !important;
+.clause-button:hover {
+  border: none !important;
+  background: rgb(246, 251, 255) !important;
 }
 
 .important-hover:hover {

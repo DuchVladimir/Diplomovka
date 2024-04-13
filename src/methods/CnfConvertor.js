@@ -425,11 +425,11 @@ function reduceFinalVariables(rootClause) {
       rootClause.variable[objIndex1].isNeg ==
         rootClause.variable[objIndex2].isNeg
     ) {
-      return reduceConjunction();
+      return reduceVariable();
     }
     return false;
 
-    function reduceConjunction() {
+    function reduceVariable() {
       rootClause.variable.splice(objIndex1, 1);
       rootClause.operands.splice(0, 1);
       rootClause.variableLength--;
