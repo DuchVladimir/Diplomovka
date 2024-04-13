@@ -37,6 +37,7 @@
     </div>
 
 
+    <h1 class="w-full pt-6 items-center justify-center mx-auto text-center text-xl" v-if="cnf != null && resolutionState == 'start'">CHOOSE RESOLUTION METHOD</h1>
     <div class="flex pt-8 w-full" v-if="cnf != null">
       <PrimeButton label="Interactive resolution method" :class="{ 'button-active': resolutionState == 'manual' }"
         class="p-2 pr-4 pl-4 rounded-lg border w-full border-gray-200 no-select p-button-outlined p-button-raised md:me-1"
